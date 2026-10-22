@@ -1,0 +1,40 @@
+<!-- OtagHome app icon and logo: the otağ tent on a rounded dark tile. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FF111318"
+        android:pathData="M20,0h68a20,20 0,0 1,20 20v68a20,20 0,0 1,-20 20h-68a20,20 0,0 1,-20 -20v-68a20,20 0,0 1,20 -20z" />
+    <path
+        android:fillColor="#FFE53935"
+        android:pathData="M54.0,16.8L66.8,20.4L54.0,24.0Z" />
+    <path
+        android:fillColor="#FFE0E0E0"
+        android:pathData="M53.2,16.8L54.8,16.8L54.8,32.8L53.2,32.8Z" />
+    <path
+        android:fillColor="#FF7C4DFF"
+        android:pathData="M25.2,53.6Q30.0,37.6 54.0,29.6Q78.0,37.6 82.8,53.6Z" />
+    <path
+        android:fillColor="#FF5E35D9"
+        android:pathData="M54.0,29.6Q78.0,37.6 82.8,53.6L60.4,53.6Q62.0,39.2 54.0,29.6Z" />
+    <path
+        android:fillColor="#FFF5F1E8"
+        android:pathData="M30.0,55.2L78.0,55.2L78.0,80.8L30.0,80.8Z" />
+    <path
+        android:fillColor="#FFFFC857"
+        android:pathData="M25.2,52.0L82.8,52.0L82.8,56.0L25.2,56.0Z" />
+    <path
+        android:fillColor="#FFFFC857"
+        android:pathData="M26.8,55.2L30.2,58.4L33.6,55.2L37.0,58.4L40.4,55.2L43.8,58.4L47.2,55.2L50.6,58.4L54.0,55.2L57.4,58.4L60.8,55.2L64.2,58.4L67.6,55.2L71.0,58.4L74.4,55.2L77.8,58.4L81.2,55.2L81.2,55.2Z" />
+    <path
+        android:fillColor="#FF2A2238"
+        android:pathData="M47.6,80.8L47.6,69.6A6.4,6.4 0,0 1 60.4,69.6L60.4,80.8Z" />
+    <path
+        android:fillColor="#FFDCD3C2"
+        android:pathData="M66.8,55.2L78.0,55.2L78.0,80.8L66.8,80.8Z" />
+    <path
+        android:fillColor="#FF7C4DFF"
+        android:pathData="M22.0,80.8L86.0,80.8L86.0,84.0L22.0,84.0Z" />
+</vector>

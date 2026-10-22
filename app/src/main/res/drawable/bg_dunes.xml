@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dunes: warm sky over layered sand dunes and a pale sun. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="1080">
+                <item android:offset="0" android:color="#FF3B1C4A" />
+                <item android:offset="0.35" android:color="#FFB0476A" />
+                <item android:offset="0.62" android:color="#FFF08A5D" />
+                <item android:offset="0.8" android:color="#FFFFC27A" />
+                <item android:offset="1" android:color="#FFE89A5E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="1380" android:centerY="420" android:gradientRadius="600">
+                <item android:offset="0" android:color="#55FFF1C1" />
+                <item android:offset="1" android:color="#00FFF1C1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFFFF1C1" android:pathData="M1380,420m-110,0a110,110 0,1 0,220 0a110,110 0,1 0,-220 0" />
+    <path android:fillColor="#FFD9774B" android:pathData="M0,1080 L0,700 C300,620 600,640 900,700 C1200,760 1500,640 1920,660 L1920,1080 Z" />
+    <path android:fillColor="#FFB55636" android:pathData="M0,1080 L0,800 C260,740 520,760 820,820 C1120,880 1420,760 1920,780 L1920,1080 Z" />
+    <path android:fillColor="#FF8A3A27" android:pathData="M0,1080 L0,900 C380,850 700,920 1000,930 C1300,940 1600,860 1920,880 L1920,1080 Z" />
+    <path android:fillColor="#FF5C2219" android:pathData="M0,1080 L0,990 C420,960 860,1010 1240,990 C1560,972 1760,990 1920,980 L1920,1080 Z" />
+</vector>

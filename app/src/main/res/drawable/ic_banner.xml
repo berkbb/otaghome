@@ -1,0 +1,43 @@
+<!-- OtagHome TV banner: the otağ, the khan's command tent, on the Pitwall dark ground with its accent stripe. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <path
+        android:fillColor="#FF111318"
+        android:pathData="M0,0h320v180h-320z" />
+    <path
+        android:fillColor="#FF7C4DFF"
+        android:pathData="M0,174h320v6h-320z" />
+    <path
+        android:fillColor="#FFE53935"
+        android:pathData="M159.5,22.7L182.7,29.2L159.5,35.8Z" />
+    <path
+        android:fillColor="#FFE0E0E0"
+        android:pathData="M158.1,22.7L160.9,22.7L160.9,51.7L158.1,51.7Z" />
+    <path
+        android:fillColor="#FF7C4DFF"
+        android:pathData="M107.3,89.4Q116.0,60.4 159.5,45.9Q203.0,60.4 211.7,89.4Z" />
+    <path
+        android:fillColor="#FF5E35D9"
+        android:pathData="M159.5,45.9Q203.0,60.4 211.7,89.4L171.1,89.4Q174.0,63.3 159.5,45.9Z" />
+    <path
+        android:fillColor="#FFF5F1E8"
+        android:pathData="M116.0,92.3L203.0,92.3L203.0,138.7L116.0,138.7Z" />
+    <path
+        android:fillColor="#FFFFC857"
+        android:pathData="M107.3,86.5L211.7,86.5L211.7,93.8L107.3,93.8Z" />
+    <path
+        android:fillColor="#FFFFC857"
+        android:pathData="M110.2,92.3L116.3,98.1L122.5,92.3L128.8,98.1L134.8,92.3L140.9,98.1L147.2,92.3L153.4,98.1L159.5,92.3L165.6,98.1L171.8,92.3L178.1,98.1L184.1,92.3L190.2,98.1L196.5,92.3L202.7,98.1L208.8,92.3L208.8,92.3Z" />
+    <path
+        android:fillColor="#FF2A2238"
+        android:pathData="M147.9,138.7L147.9,118.4A-60.9,-9.2 0,0 1 171.1,118.4L171.1,138.7Z" />
+    <path
+        android:fillColor="#FFDCD3C2"
+        android:pathData="M182.7,92.3L203.0,92.3L203.0,138.7L182.7,138.7Z" />
+    <path
+        android:fillColor="#FF7C4DFF"
+        android:pathData="M101.5,138.7L217.5,138.7L217.5,144.5L101.5,144.5Z" />
+</vector>

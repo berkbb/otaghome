@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aurora: green and violet ribbons over a night sky and dark mountains. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="1080">
+                <item android:offset="0" android:color="#FF040816" />
+                <item android:offset="0.6" android:color="#FF0A1A2A" />
+                <item android:offset="1" android:color="#FF0B2230" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M-100,380 C350,180 760,460 1180,260 S1820,80 2020,160 L2020,300 C1650,240 1350,460 980,440 S350,360 -100,560 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="160" android:endX="0" android:endY="560">
+                <item android:offset="0" android:color="#008B5CF6" />
+                <item android:offset="0.5" android:color="#888B5CF6" />
+                <item android:offset="1" android:color="#0022D3EE" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M-100,540 C300,320 700,660 1100,440 S1800,220 2020,340 L2020,500 C1700,400 1400,640 1050,600 S400,560 -100,760 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="320" android:endX="0" android:endY="760">
+                <item android:offset="0" android:color="#003DFFB0" />
+                <item android:offset="0.45" android:color="#AA3DFFB0" />
+                <item android:offset="1" android:color="#0014B8A6" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="1100" android:centerY="460" android:gradientRadius="900">
+                <item android:offset="0" android:color="#2A3DFFB0" />
+                <item android:offset="1" android:color="#003DFFB0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#CCFFFFFF" android:pathData="M120,90m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M340,160m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M560,70m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M780,130m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1010,60m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1260,120m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1480,70m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1700,150m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1860,60m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M220,260m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M880,220m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1590,260m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M60,330m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#CCFFFFFF" android:pathData="M1380,300m-2.5,0a2.5,2.5 0,1 0,5 0a2.5,2.5 0,1 0,-5 0" />
+    <path android:fillColor="#FF0C1626" android:pathData="M0,1080 L0,820 L220,740 L380,800 L600,690 L780,780 L960,720 L1160,810 L1360,700 L1560,780 L1760,720 L1920,770 L1920,1080 Z" />
+    <path android:fillColor="#FF060A14" android:pathData="M0,1080 L0,900 L160,860 L340,920 L540,830 L720,900 L900,850 L1100,930 L1300,840 L1500,910 L1700,860 L1920,920 L1920,1080 Z" />
+</vector>

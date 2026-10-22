@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Paddock's default background: a night-purple ground with Pitwall's accent glowing in the top
+     right, a cool glow bottom left and faint racing lines sweeping across. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="1920"
+                android:endY="1080">
+                <item android:offset="0" android:color="#FF1B1236" />
+                <item android:offset="0.55" android:color="#FF111318" />
+                <item android:offset="1" android:color="#FF0B0D12" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="1560"
+                android:centerY="160"
+                android:gradientRadius="980">
+                <item android:offset="0" android:color="#807C4DFF" />
+                <item android:offset="0.5" android:color="#267C4DFF" />
+                <item android:offset="1" android:color="#007C4DFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="radial"
+                android:centerX="220"
+                android:centerY="1020"
+                android:gradientRadius="760">
+                <item android:offset="0" android:color="#4000ADB5" />
+                <item android:offset="1" android:color="#0000ADB5" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Racing lines -->
+    <path
+        android:pathData="M-80,860 C420,640 900,980 1400,700 S1900,360 2020,420"
+        android:strokeWidth="3"
+        android:strokeColor="#1FFFFFFF"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M-80,920 C440,700 920,1040 1420,760 S1920,420 2020,480"
+        android:strokeWidth="2"
+        android:strokeColor="#147C4DFF"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M-80,980 C460,760 940,1100 1440,820 S1940,480 2020,540"
+        android:strokeWidth="1.5"
+        android:strokeColor="#0FFFFFFF"
+        android:fillColor="#00000000" />
+    <path
+        android:pathData="M1180,-40 C1320,180 1640,260 2000,200"
+        android:strokeWidth="2"
+        android:strokeColor="#14FFFFFF"
+        android:fillColor="#00000000" />
+</vector>

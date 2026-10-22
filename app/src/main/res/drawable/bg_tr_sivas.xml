@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sivas: the twin tiled minarets and carved portal of Gök Medrese over the snowy steppe. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="860">
+                <item android:offset="0" android:color="#FF22345E" />
+                <item android:offset="0.55" android:color="#FF6F8FBF" />
+                <item android:offset="1" android:color="#FFE3D3C8" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFE8EEF4" android:pathData="M-60,1080L-60,786.2C8,781.1 212,757.8 348,755.6C484,753.4 620,774 756,773C892,772 1028,753.9 1164,749.6C1300,745.3 1436,738.5 1572,747.4C1708,756.4 1912,794.1 1980,803.4L1980,1080Z" />
+    <path android:fillColor="#FFC9D4E0" android:pathData="M-60,1080L-60,852.6C-3.3,851.4 166.7,847.2 280,845.5C393.3,843.8 506.7,844.3 620,842.3C733.3,840.3 846.7,832.9 960,833.5C1073.3,834 1186.7,845.4 1300,845.6C1413.3,845.8 1526.7,827.6 1640,834.7C1753.3,841.8 1923.3,879.3 1980,888.3L1980,1080Z" />
+    <path android:fillColor="#FFB09C82" android:pathData="M420,640h1080v300h-1080z" />
+    <path android:fillColor="#FFC8B49A" android:pathData="M760,560h400v380h-400z" />
+    <path android:fillColor="#FF8E765E" android:pathData="M830,940V735.4Q830,643 960,610Q1090,643 1090,735.4V940Z" />
+    <path android:fillColor="#FF6E5A46" android:pathData="M880,940V803.6Q880,742 960,720Q1040,742 1040,803.6V940Z" />
+    <path android:fillColor="#FFB8A286" android:pathData="M840,640V622A12,12 0,0 1 864,622V640ZM870,654V636A12,12 0,0 1 894,636V654ZM900,640V622A12,12 0,0 1 924,622V640ZM930,654V636A12,12 0,0 1 954,636V654ZM960,640V622A12,12 0,0 1 984,622V640ZM990,654V636A12,12 0,0 1 1014,636V654ZM1020,640V622A12,12 0,0 1 1044,622V640ZM1050,654V636A12,12 0,0 1 1074,636V654Z" />
+    <path android:fillColor="#FFA8664A" android:pathData="M760,300h60v260h-60z" />
+    <path android:fillColor="#FF2E8FB8" android:pathData="M760,330h60v18h-60zM760,400h60v18h-60zM760,470h60v18h-60z" />
+    <path android:fillColor="#FF59C3D9" android:pathData="M760,352h60v8h-60zM760,422h60v8h-60zM760,492h60v8h-60z" />
+    <path android:fillColor="#FFC8B49A" android:pathData="M750,290h80v14h-80z" />
+    <path android:fillColor="#FFA8664A" android:pathData="M766,290L790,230L814,290Z" />
+    <path android:fillColor="#FFA8664A" android:pathData="M1100,300h60v260h-60z" />
+    <path android:fillColor="#FF2E8FB8" android:pathData="M1100,330h60v18h-60zM1100,400h60v18h-60zM1100,470h60v18h-60z" />
+    <path android:fillColor="#FF59C3D9" android:pathData="M1100,352h60v8h-60zM1100,422h60v8h-60zM1100,492h60v8h-60z" />
+    <path android:fillColor="#FFC8B49A" android:pathData="M1090,290h80v14h-80z" />
+    <path android:fillColor="#FFA8664A" android:pathData="M1106,290L1130,230L1154,290Z" />
+    <path android:fillColor="#FFF2F6FA" android:pathData="M0,930h1920v150h-1920z" />
+    <path android:fillColor="#80FFFFFF" android:pathData="M1285,140m-2.2,0a2.2,2.2 0,1 1,4.5 0a2.2,2.2 0,1 1,-4.5 0M1638,281m-1.2,0a1.2,1.2 0,1 1,2.5 0a1.2,1.2 0,1 1,-2.5 0M963,137m-2.1,0a2.1,2.1 0,1 1,4.2 0a2.1,2.1 0,1 1,-4.2 0M1855,90m-1.4,0a1.4,1.4 0,1 1,2.7 0a1.4,1.4 0,1 1,-2.7 0M970,136m-1.7,0a1.7,1.7 0,1 1,3.5 0a1.7,1.7 0,1 1,-3.5 0M218,137m-1.2,0a1.2,1.2 0,1 1,2.4 0a1.2,1.2 0,1 1,-2.4 0M453,218m-1.6,0a1.6,1.6 0,1 1,3.2 0a1.6,1.6 0,1 1,-3.2 0M1886,209m-1.4,0a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0M1642,46m-1.4,0a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0M1274,237m-1.4,0a1.4,1.4 0,1 1,2.8 0a1.4,1.4 0,1 1,-2.8 0M13,12m-1.5,0a1.5,1.5 0,1 1,3 0a1.5,1.5 0,1 1,-3 0M451,94m-2.4,0a2.4,2.4 0,1 1,4.8 0a2.4,2.4 0,1 1,-4.8 0M602,170m-2.5,0a2.5,2.5 0,1 1,5.1 0a2.5,2.5 0,1 1,-5.1 0M1114,114m-1.5,0a1.5,1.5 0,1 1,2.9 0a1.5,1.5 0,1 1,-2.9 0M1424,110m-2.6,0a2.6,2.6 0,1 1,5.1 0a2.6,2.6 0,1 1,-5.1 0M1840,206m-1.6,0a1.6,1.6 0,1 1,3.2 0a1.6,1.6 0,1 1,-3.2 0M749,222m-1.4,0a1.4,1.4 0,1 1,2.9 0a1.4,1.4 0,1 1,-2.9 0M308,145m-1.3,0a1.3,1.3 0,1 1,2.6 0a1.3,1.3 0,1 1,-2.6 0M627,11m-2,0a2,2 0,1 1,4.1 0a2,2 0,1 1,-4.1 0M1459,183m-1.3,0a1.3,1.3 0,1 1,2.6 0a1.3,1.3 0,1 1,-2.6 0M737,166m-1.9,0a1.9,1.9 0,1 1,3.7 0a1.9,1.9 0,1 1,-3.7 0M656,104m-1.9,0a1.9,1.9 0,1 1,3.7 0a1.9,1.9 0,1 1,-3.7 0M1453,100m-1.3,0a1.3,1.3 0,1 1,2.6 0a1.3,1.3 0,1 1,-2.6 0M56,193m-2.4,0a2.4,2.4 0,1 1,4.8 0a2.4,2.4 0,1 1,-4.8 0M47,291m-2.3,0a2.3,2.3 0,1 1,4.6 0a2.3,2.3 0,1 1,-4.6 0M759,202m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0M28,241m-1.3,0a1.3,1.3 0,1 1,2.5 0a1.3,1.3 0,1 1,-2.5 0M380,110m-1.4,0a1.4,1.4 0,1 1,2.7 0a1.4,1.4 0,1 1,-2.7 0M513,246m-1.7,0a1.7,1.7 0,1 1,3.4 0a1.7,1.7 0,1 1,-3.4 0M736,278m-1.6,0a1.6,1.6 0,1 1,3.1 0a1.6,1.6 0,1 1,-3.1 0" />
+</vector>

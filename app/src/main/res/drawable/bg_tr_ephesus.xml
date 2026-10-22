@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ephesus: the two-storey facade of the Library of Celsus at golden hour. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="1080">
+                <item android:offset="0" android:color="#FF5B3A6E" />
+                <item android:offset="0.45" android:color="#FFE0855E" />
+                <item android:offset="0.8" android:color="#FFF8C27E" />
+                <item android:offset="1" android:color="#FFF8C27E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFA06E57" android:pathData="M-60,1080L-60,631.4C8,625.3 212,597.3 348,594.7C484,592.1 620,616.8 756,615.6C892,614.4 1028,592.6 1164,587.5C1300,582.4 1436,574.1 1572,584.9C1708,595.7 1912,640.9 1980,652.1L1980,1080Z" />
+    <path android:fillColor="#FFC9A27A" android:pathData="M0,960h1920v120h-1920z" />
+    <path android:fillColor="#FFC29A70" android:pathData="M520,380h880v580h-880z" />
+    <path android:fillColor="#FF6E4532" android:pathData="M640,900V745A55,55 0,0 1 750,745V900ZM905,900V705A55,55 0,0 1 1015,705V900ZM1170,900V745A55,55 0,0 1 1280,745V900Z" />
+    <path android:fillColor="#FF6E4532" android:pathData="M650,470h90v120h-90zM915,450h90v140h-90zM1180,470h90v120h-90z" />
+    <path android:fillColor="#FFE9C9A0" android:pathData="M480,900h960v30h-960zM450,930h1020v30h-1020z" />
+    <path android:fillColor="#FFE9C9A0" android:pathData="M538,860h134v40h-134zM560,620h34v240h-34zM554,612h46v12h-46zM630,620h34v240h-34zM624,612h46v12h-46zM778,860h134v40h-134zM800,620h34v240h-34zM794,612h46v12h-46zM870,620h34v240h-34zM864,612h46v12h-46zM1008,860h134v40h-134zM1030,620h34v240h-34zM1024,612h46v12h-46zM1100,620h34v240h-34zM1094,612h46v12h-46zM1248,860h134v40h-134zM1270,620h34v240h-34zM1264,612h46v12h-46zM1340,620h34v240h-34zM1334,612h46v12h-46z" />
+    <path android:fillColor="#FFE9C9A0" android:pathData="M490,585h940v30h-940z" />
+    <path android:fillColor="#FFE9C9A0" android:pathData="M666,560h112v26h-112zM680,400h28v160h-28zM675,392h38v10h-38zM744,400h28v160h-28zM739,392h38v10h-38zM660,392L726,340L792,392ZM906,560h112v26h-112zM920,400h28v160h-28zM915,392h38v10h-38zM984,400h28v160h-28zM979,392h38v10h-38zM900,392L966,340L1032,392ZM1146,560h112v26h-112zM1160,400h28v160h-28zM1155,392h38v10h-38zM1224,400h28v160h-28zM1219,392h38v10h-38zM1140,392L1206,340L1272,392ZM560,380h800v14h-800z" />
+    <path android:fillColor="#FFF6DFBE" android:pathData="M564,625h6v230h-6zM634,625h6v230h-6zM804,625h6v230h-6zM874,625h6v230h-6zM1034,625h6v230h-6zM1104,625h6v230h-6zM1274,625h6v230h-6zM1344,625h6v230h-6z" />
+</vector>

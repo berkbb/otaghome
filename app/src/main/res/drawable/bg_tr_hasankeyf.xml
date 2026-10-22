@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hasankeyf: cliffs with cave dwellings, the old bridge piers and the El Rızk minaret by the Tigris. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="760">
+                <item android:offset="0" android:color="#FF2E3A6E" />
+                <item android:offset="0.5" android:color="#FFD08070" />
+                <item android:offset="0.75" android:color="#FFF6B880" />
+                <item android:offset="1" android:color="#FFF6B880" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFC9A27A" android:pathData="M-20,1080L-20,300L300,280L520,330L700,420L820,560L860,760L880,1080Z" />
+    <path android:fillColor="#FFA87E58" android:pathData="M-20,1080L-20,520L400,540L700,620L820,760L840,1080Z" />
+    <path android:fillColor="#FF5A3E2E" android:pathData="M657,490V455.5A15.5,15.5 0,0 1 688,455.5V490ZM562,374V354A17,17 0,0 1 596,354V374ZM684,386V365.5A12.5,12.5 0,0 1 709,365.5V386ZM400,600V571.5A13.5,13.5 0,0 1 427,571.5V600ZM576,412V395.5A13.5,13.5 0,0 1 603,395.5V412ZM241,568V547A14,14 0,0 1 269,547V568ZM418,441V418A11,11 0,0 1 440,418V441ZM652,676V659A17,17 0,0 1 686,659V676ZM155,360V334A10,10 0,0 1 175,334V360ZM240,444V417.5A12.5,12.5 0,0 1 265,417.5V444ZM341,461V439A13,13 0,0 1 367,439V461ZM221,817V794A16,16 0,0 1 253,794V817ZM42,544V525.5A16.5,16.5 0,0 1 75,525.5V544ZM169,495V466A11,11 0,0 1 191,466V495ZM328,778V739A10,10 0,0 1 348,739V778ZM366,393V366.5A14.5,14.5 0,0 1 395,366.5V393ZM333,606V586A15,15 0,0 1 363,586V606ZM512,601V582.5A12.5,12.5 0,0 1 537,582.5V601ZM282,371V344.5A15.5,15.5 0,0 1 313,344.5V371ZM38,641V616.5A16.5,16.5 0,0 1 71,616.5V641ZM405,656V622A10,10 0,0 1 425,622V656ZM67,722V685.5A12.5,12.5 0,0 1 92,685.5V722ZM221,420V389.5A13.5,13.5 0,0 1 248,389.5V420ZM372,622V591.5A15.5,15.5 0,0 1 403,591.5V622ZM276,757V741A17,17 0,0 1 310,741V757ZM623,743V719.5A15.5,15.5 0,0 1 654,719.5V743Z" />
+    <path android:fillColor="#FF8A6A4E" android:pathData="M30,250h260v50h-260zM30,230h20v26h-20zM66,230h20v26h-20zM102,230h20v26h-20zM138,230h20v26h-20zM174,230h20v26h-20zM210,230h20v26h-20zM246,230h20v26h-20zM282,230h20v26h-20z" />
+    <path android:pathData="M0,760h1920V1080H0z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="760" android:endX="0" android:endY="1080">
+                <item android:offset="0" android:color="#FF9A8A7A" />
+                <item android:offset="0.4" android:color="#FF4E5A6E" />
+                <item android:offset="1" android:color="#FF22304A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#40FFE0B0" android:pathData="M900,800h300v3h-300zM970,830h300v3h-300zM1040,860h300v3h-300zM1110,890h300v3h-300zM1180,920h300v3h-300zM1250,950h300v3h-300zM1320,980h300v3h-300zM1390,1010h300v3h-300z" />
+    <path android:fillColor="#FFB08A64" android:pathData="M1060,560h90v260h-90zM1340,600h80v220h-80zM1040,560L1105,500L1170,560Z" />
+    <path android:fillColor="#FF8E6E4E" android:pathData="M1120,560h30v260h-30zM1390,600h30v220h-30z" />
+    <path android:fillColor="#FFC9A27A" android:pathData="M1640,380h60v420h-60zM1630,450h80v14h-80zM1640,380C1640,345.4 1700,345.4 1700,380Z" />
+    <path android:fillColor="#FFA87E58" android:pathData="M1600,780h200v40h-200z" />
+    <path android:fillColor="#FF9A8A6A" android:pathData="M1500,840L1500,820C1533.3,813.3 1620,790 1700,780C1780,770 1933.3,763.3 1980,760L1980,840Z" />
+</vector>

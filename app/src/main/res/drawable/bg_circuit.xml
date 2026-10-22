@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Night circuit: a floodlit track sweeping across the dark, its racing line in the Paddock accent. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="1920" android:endY="1080">
+                <item android:offset="0" android:color="#FF0B0D12" />
+                <item android:offset="1" android:color="#FF151923" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="1520" android:centerY="260" android:gradientRadius="820">
+                <item android:offset="0" android:color="#557C4DFF" />
+                <item android:offset="1" android:color="#007C4DFF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="260" android:centerY="980" android:gradientRadius="620">
+                <item android:offset="0" android:color="#33FF3B3B" />
+                <item android:offset="1" android:color="#00FF3B3B" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Asphalt -->
+    <path android:strokeColor="#FF1C212B" android:strokeWidth="150" android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M-100,900 C300,880 520,600 820,600 S1300,820 1560,620 S1900,260 2020,240" />
+    <!-- Track edges -->
+    <group android:translateY="-72">
+        <path android:strokeColor="#40FFFFFF" android:strokeWidth="4" android:fillColor="#00000000"
+            android:pathData="M-100,900 C300,880 520,600 820,600 S1300,820 1560,620 S1900,260 2020,240" />
+    </group>
+    <group android:translateY="72">
+        <path android:strokeColor="#40FFFFFF" android:strokeWidth="4" android:fillColor="#00000000"
+            android:pathData="M-100,900 C300,880 520,600 820,600 S1300,820 1560,620 S1900,260 2020,240" />
+    </group>
+    <!-- Red kerb on the outer edge -->
+    <group android:translateY="84">
+        <path android:strokeColor="#CCE53935" android:strokeWidth="10" android:fillColor="#00000000"
+            android:pathData="M-100,900 C300,880 520,600 820,600 S1300,820 1560,620 S1900,260 2020,240" />
+    </group>
+    <!-- Racing line -->
+    <path android:strokeColor="#557C4DFF" android:strokeWidth="18" android:fillColor="#00000000"
+        android:pathData="M-100,920 C300,880 560,640 840,620 S1280,780 1540,600 S1880,250 2020,230" />
+    <path android:strokeColor="#FF9F7BFF" android:strokeWidth="4" android:fillColor="#00000000"
+        android:pathData="M-100,920 C300,880 560,640 840,620 S1280,780 1540,600 S1880,250 2020,230" />
+</vector>

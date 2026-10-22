@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ankara: Hacı Bayram Veli Mosque beside the walls of the Temple of Augustus, the castle behind. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="900">
+                <item android:offset="0" android:color="#FF1B2A4E" />
+                <item android:offset="0.5" android:color="#FF7A4E6E" />
+                <item android:offset="0.78" android:color="#FFE6896A" />
+                <item android:offset="1" android:color="#FFF4B37A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FF3A2E48" android:pathData="M900,1080L900,760C958.3,726.7 1150,600 1250,560C1350,520 1416.7,520 1500,520C1583.3,520 1670,540 1750,560C1830,580 1941.7,626.7 1980,640L1980,1080Z" />
+    <path android:fillColor="#FF3A2E48" android:pathData="M1290,500h440v40h-440zM1300,486h22v34h-22zM1340,486h22v34h-22zM1380,486h22v34h-22zM1420,486h22v34h-22zM1460,486h22v34h-22zM1500,486h22v34h-22zM1540,486h22v34h-22zM1580,486h22v34h-22zM1620,486h22v34h-22zM1660,486h22v34h-22zM1700,486h22v34h-22zM1360,440h60v80h-60zM1600,450h56v70h-56z" />
+    <path android:fillColor="#FF4A3A40" android:pathData="M-60,1080L-60,909.4C-3.3,907.6 166.7,899.2 280,898.4C393.3,897.6 506.7,905 620,904.7C733.3,904.3 846.7,897.8 960,896.3C1073.3,894.7 1186.7,892.2 1300,895.5C1413.3,898.7 1526.7,912 1640,915.6C1753.3,919.3 1923.3,917.2 1980,917.5L1980,1080Z" />
+    <path android:fillColor="#FFB08A6E" android:pathData="M1060,940L1060,610L1100,600L1150,590L1190,610L1240,585L1300,600L1340,575L1400,600L1460,590L1500,620L1500,940Z" />
+    <path android:fillColor="#FF4A2F2A" android:pathData="M1210,700h100v240h-100z" />
+    <path android:fillColor="#FF9A765C" android:pathData="M1070,640h420v3h-420zM1070,674h420v3h-420zM1070,708h420v3h-420zM1070,742h420v3h-420zM1070,776h420v3h-420zM1070,810h420v3h-420zM1070,844h420v3h-420zM1070,878h420v3h-420zM1070,912h420v3h-420z" />
+    <path android:fillColor="#FFE8D9C0" android:pathData="M400,690h560v250h-560z" />
+    <path android:fillColor="#FF7C8B96" android:pathData="M380,690L470,600L890,600L980,690Z" />
+    <path android:fillColor="#FF5D6A74" android:pathData="M470,600L890,600L980,690L820,690Z" />
+    <path android:fillColor="#FF5A4A3E" android:pathData="M440,800V747A17,17 0,0 1 474,747V800ZM520,800V747A17,17 0,0 1 554,747V800ZM600,800V747A17,17 0,0 1 634,747V800ZM680,800V747A17,17 0,0 1 714,747V800ZM760,800V747A17,17 0,0 1 794,747V800ZM840,800V747A17,17 0,0 1 874,747V800ZM920,800V747A17,17 0,0 1 954,747V800ZM440,900V857A17,17 0,0 1 474,857V900ZM520,900V857A17,17 0,0 1 554,857V900ZM600,900V857A17,17 0,0 1 634,857V900ZM680,900V857A17,17 0,0 1 714,857V900ZM760,900V857A17,17 0,0 1 794,857V900ZM840,900V857A17,17 0,0 1 874,857V900ZM920,900V857A17,17 0,0 1 954,857V900Z" />
+    <path android:fillColor="#FFC9B79C" android:pathData="M1000,560h30v380h-30zM992,640h46v12h-46z" />
+    <path android:fillColor="#FF7C8B96" android:pathData="M996,560L1015,470L1034,560Z" />
+    <path android:fillColor="#FF2E2630" android:pathData="M0,930h1920v150h-1920z" />
+    <path android:fillColor="#FF1F2A24" android:pathData="M273.7,916.7m-44.5,0a44.5,44.5 0,1 1,88.9 0a44.5,44.5 0,1 1,-88.9 0M282.4,899.8m-39.7,0a39.7,39.7 0,1 1,79.5 0a39.7,39.7 0,1 1,-79.5 0M310.9,913.9m-34.4,0a34.4,34.4 0,1 1,68.8 0a34.4,34.4 0,1 1,-68.8 0M266,916.1m-39.5,0a39.5,39.5 0,1 1,79 0a39.5,39.5 0,1 1,-79 0M318.9,876.1m-39.7,0a39.7,39.7 0,1 1,79.4 0a39.7,39.7 0,1 1,-79.4 0M1688.3,935.1m-39.5,0a39.5,39.5 0,1 1,79 0a39.5,39.5 0,1 1,-79 0M1615.1,928.8m-51.4,0a51.4,51.4 0,1 1,102.8 0a51.4,51.4 0,1 1,-102.8 0M1664.3,899.3m-49.1,0a49.1,49.1 0,1 1,98.2 0a49.1,49.1 0,1 1,-98.2 0M1659,914.5m-41.3,0a41.3,41.3 0,1 1,82.5 0a41.3,41.3 0,1 1,-82.5 0M1644.2,904m-51.2,0a51.2,51.2 0,1 1,102.3 0a51.2,51.2 0,1 1,-102.3 0M1802.7,921.9m-35.3,0a35.3,35.3 0,1 1,70.7 0a35.3,35.3 0,1 1,-70.7 0M1826.9,925.5m-31.2,0a31.2,31.2 0,1 1,62.3 0a31.2,31.2 0,1 1,-62.3 0M1787.9,934.8m-33.8,0a33.8,33.8 0,1 1,67.6 0a33.8,33.8 0,1 1,-67.6 0M1802.5,941.8m-36.7,0a36.7,36.7 0,1 1,73.4 0a36.7,36.7 0,1 1,-73.4 0M1842.2,919m-39,0a39,39 0,1 1,78.1 0a39,39 0,1 1,-78.1 0" />
+</vector>

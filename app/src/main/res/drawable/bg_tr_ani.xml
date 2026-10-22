@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ani: the ruined cathedral and city walls on the plateau above the Arpaçay gorge. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="820">
+                <item android:offset="0" android:color="#FF3E4A7A" />
+                <item android:offset="0.5" android:color="#FFC9876A" />
+                <item android:offset="0.8" android:color="#FFF2C38B" />
+                <item android:offset="1" android:color="#FFF2C38B" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FF9A8A6A" android:pathData="M-60,800L-60,612.6C8,612.7 212,604.1 348,613.1C484,622.1 620,658 756,666.6C892,675.2 1028,672.7 1164,664.9C1300,657.1 1436,626.4 1572,619.9C1708,613.4 1912,624.8 1980,625.8L1980,800Z" />
+    <path android:fillColor="#FFA49556" android:pathData="M-60,1080L-60,760C50,756.7 390,740 600,740C810,740 1050,760 1200,760C1350,760 1370,740 1500,740C1630,740 1900,756.7 1980,760L1980,1080Z" />
+    <path android:fillColor="#FF4E3A34" android:pathData="M1450,1080L1520,800L1600,760L1700,780L1780,820L1980,800L1980,1080Z" />
+    <path android:fillColor="#FF7A5A48" android:pathData="M1500,1080L1560,820L1620,790L1700,820L1680,1080Z" />
+    <path android:fillColor="#FF7C6F3C" android:pathData="M-60,1080L-60,910.9C-3.3,906 166.7,880.8 280,881.5C393.3,882.2 506.7,913.2 620,914.9C733.3,916.7 846.7,891.5 960,891.8C1073.3,892.1 1186.7,913.5 1300,916.6C1413.3,919.6 1526.7,916.2 1640,910.1C1753.3,904 1923.3,885 1980,880L1980,1080Z" />
+    <path android:fillColor="#FFB07A5E" android:pathData="M720,880L720,560L800,540L840,520L880,470L940,430L1000,470L1030,500L1080,540L1120,540L1160,600L1160,880Z" />
+    <path android:fillColor="#FF8E5E46" android:pathData="M1030,500L1080,540L1120,540L1160,600L1160,880L1060,880Z" />
+    <path android:fillColor="#FF4A2E26" android:pathData="M900,700h70v180h-70zM790,640h20v70h-20zM1080,650h20v70h-20zM930,560h14v50h-14z" />
+    <path android:strokeColor="#99643E30" android:strokeWidth="4" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M740,880V640Q765,600 790,640V880M990,880V640Q1015,600 1040,640V880M1090,880V640Q1115,600 1140,640V880" />
+    <path android:fillColor="#FFB07A5E" android:pathData="M330,700h110v180h-110zM320,700L385,610L450,700Z" />
+    <path android:fillColor="#FF4A2E26" android:pathData="M375,780h20v60h-20z" />
+    <path android:fillColor="#FF9A6E55" android:pathData="M0,760h260v120h-260zM0,736h18v26h-18zM34,736h18v26h-18zM68,736h18v26h-18zM102,736h18v26h-18zM136,736h18v26h-18zM170,736h18v26h-18zM204,736h18v26h-18zM238,736h18v26h-18zM250,780m-40,0a40,40 0,1 1,80 0a40,40 0,1 1,-80 0" />
+</vector>

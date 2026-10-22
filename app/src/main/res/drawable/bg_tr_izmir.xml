@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- İzmir: the Konak Clock Tower among palms by the bay at sunset. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="760">
+                <item android:offset="0" android:color="#FF22305E" />
+                <item android:offset="0.45" android:color="#FFD4637A" />
+                <item android:offset="0.62" android:color="#FFFFA26B" />
+                <item android:offset="0.7" android:color="#FFFFD08A" />
+                <item android:offset="1" android:color="#FFFFD08A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="radial" android:centerX="1450" android:centerY="700" android:gradientRadius="500">
+                <item android:offset="0" android:color="#55FFD08A" />
+                <item android:offset="1" android:color="#00FFD08A" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFFFE9B8" android:pathData="M1450,700m-60,0a60,60 0,1 1,120 0a60,60 0,1 1,-120 0" />
+    <path android:fillColor="#FF7A5878" android:pathData="M-60,730L-60,661.1C-3.3,662.9 166.7,673.9 280,671.7C393.3,669.6 506.7,649 620,648.3C733.3,647.6 846.7,663.2 960,667.6C1073.3,672 1186.7,678 1300,674.7C1413.3,671.4 1526.7,659.2 1640,647.9C1753.3,636.5 1923.3,613.4 1980,606.6L1980,730Z" />
+    <path android:fillColor="#FFF3C9A0" android:pathData="M40,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M77,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M114,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M151,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M188,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M225,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M262,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M299,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M336,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M373,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M410,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M447,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M484,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M521,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M558,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M595,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M632,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M669,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M706,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M743,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M780,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M817,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M854,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M891,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M928,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M965,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1002,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1039,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1076,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1113,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1150,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1187,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1224,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1261,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1298,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1335,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1372,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1409,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1446,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1483,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1520,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1557,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1594,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1631,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1668,668m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1705,686m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1742,704m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1779,659m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1816,677m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1853,695m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0M1890,650m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0" />
+    <path android:pathData="M0,720h1920V1080H0z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="720" android:endX="0" android:endY="1080">
+                <item android:offset="0" android:color="#FFE0907A" />
+                <item android:offset="0.5" android:color="#FF6E4E78" />
+                <item android:offset="1" android:color="#FF2E2A50" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#99FFD08A" android:pathData="M1398.7,734h107.8v5h-107.8zM1400.9,756h110.7v5h-110.7zM1363.7,778h120.5v5h-120.5zM1432.9,800h74.6v5h-74.6zM1392.5,822h83.2v5h-83.2z" />
+    <path android:fillColor="#FF2A2238" android:pathData="M1180,790L1380,790L1360,812L1200,812ZM1230,770h110v20h-110zM1270,755h30v15h-30z" />
+    <path android:fillColor="#FF3B2C3A" android:pathData="M0,840h1920v240h-1920z" />
+    <path android:fillColor="#FFEBDDC2" android:pathData="M870,860h180v40h-180zM894,720h132v140h-132zM906,610h108v110h-108zM918,520h84v90h-84zM930,460h60v60h-60z" />
+    <path android:fillColor="#FFC7B497" android:pathData="M990,720h36v140h-36zM984,610h30v110h-30zM978,520h24v90h-24z" />
+    <path android:fillColor="#FF6E5A50" android:pathData="M920,860V797A17,17 0,0 1 954,797V860ZM966,860V797A17,17 0,0 1 1000,797V860ZM926,710V663A13,13 0,0 1 952,663V710ZM968,710V663A13,13 0,0 1 994,663V710Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M960,565m-26,0a26,26 0,1 1,52 0a26,26 0,1 1,-52 0" />
+    <path android:fillColor="#FF6E5A50" android:pathData="M958,548h4v18h-4zM958,563h14v4h-14z" />
+    <path android:fillColor="#FFEBDDC2" android:pathData="M926,460C926,420.1 994,420.1 994,460ZM957,400h6v26h-6z" />
+    <path android:fillColor="#FFF0C080" android:pathData="M960,398m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" />
+    <path android:fillColor="#FF1E1424" android:pathData="M553,850Q566,660 586,470L594,470Q579,660 567,850ZM590,470Q533.6,433.2 477.2,489.5Q533.6,447.2 590,476ZM590,470Q555.6,423.6 521.2,460.9Q555.6,437.6 590,476ZM590,470Q590,420 590,450Q590,434 590,476ZM590,470Q624.4,423.6 658.8,460.9Q624.4,437.6 590,476ZM590,470Q646.4,433.2 702.8,489.5Q646.4,447.2 590,476ZM590,470Q648,445.2 705.9,525.5Q648,459.2 590,476ZM590,470Q533.6,433.2 477.2,489.5Q533.6,447.2 590,476Z" />
+    <path android:fillColor="#FF1E1424" android:pathData="M713,850Q716,700 696,550L704,550Q724,700 727,850ZM700,550Q643.6,513.2 587.2,569.5Q643.6,527.2 700,556ZM700,550Q665.6,503.6 631.2,540.9Q665.6,517.6 700,556ZM700,550Q700,500 700,530Q700,514 700,556ZM700,550Q734.4,503.6 768.8,540.9Q734.4,517.6 700,556ZM700,550Q756.4,513.2 812.8,569.5Q756.4,527.2 700,556ZM700,550Q758,525.2 815.9,605.5Q758,539.2 700,556ZM700,550Q643.6,513.2 587.2,569.5Q643.6,527.2 700,556Z" />
+    <path android:fillColor="#FF1E1424" android:pathData="M1213,850Q1225,685 1241,520L1249,520Q1237.5,685 1227,850ZM1245,520Q1188.6,483.2 1132.2,539.5Q1188.6,497.2 1245,526ZM1245,520Q1210.6,473.6 1176.2,510.9Q1210.6,487.6 1245,526ZM1245,520Q1245,470 1245,500Q1245,484 1245,526ZM1245,520Q1279.4,473.6 1313.8,510.9Q1279.4,487.6 1245,526ZM1245,520Q1301.4,483.2 1357.8,539.5Q1301.4,497.2 1245,526ZM1245,520Q1303,495.2 1360.9,575.5Q1303,509.2 1245,526ZM1245,520Q1188.6,483.2 1132.2,539.5Q1188.6,497.2 1245,526Z" />
+    <path android:fillColor="#FF1E1424" android:pathData="M1393,850Q1394,650 1366,450L1374,450Q1401,650 1407,850ZM1370,450Q1313.6,413.2 1257.2,469.5Q1313.6,427.2 1370,456ZM1370,450Q1335.6,403.6 1301.2,440.9Q1335.6,417.6 1370,456ZM1370,450Q1370,400 1370,430Q1370,414 1370,456ZM1370,450Q1404.4,403.6 1438.8,440.9Q1404.4,417.6 1370,456ZM1370,450Q1426.4,413.2 1482.8,469.5Q1426.4,427.2 1370,456ZM1370,450Q1428,425.2 1485.9,505.5Q1428,439.2 1370,456ZM1370,450Q1313.6,413.2 1257.2,469.5Q1313.6,427.2 1370,456Z" />
+</vector>

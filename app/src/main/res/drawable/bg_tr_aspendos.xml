@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Aspendos: the tiers of the Roman theatre and its stage wall in warm evening light. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="520">
+                <item android:offset="0" android:color="#FF3E5A8C" />
+                <item android:offset="0.6" android:color="#FFE6A27A" />
+                <item android:offset="1" android:color="#FFF6D2A2" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFA07A5A" android:pathData="M-60,1080L-60,515.7C-3.3,512.7 166.7,498.7 280,497.3C393.3,496 506.7,508.4 620,507.8C733.3,507.2 846.7,496.3 960,493.8C1073.3,491.2 1186.7,487.1 1300,492.5C1413.3,497.8 1526.7,519.9 1640,526.1C1753.3,532.2 1923.3,528.7 1980,529.2L1980,1080Z" />
+    <path android:fillColor="#FFC09468" android:pathData="M60,1080A900,420 0,0 1 1860,1080Z" />
+    <path android:strokeColor="#FFE2B98A" android:strokeWidth="14" android:strokeLineCap="butt" android:fillColor="#00000000" android:pathData="M60,1080A900,420 0,0 1 1860,1080M106,1046A854,390 0,0 1 1814,1046M152,1012A808,360 0,0 1 1768,1012M198,978A762,330 0,0 1 1722,978M244,944A716,300 0,0 1 1676,944M290,910A670,270 0,0 1 1630,910M336,876A624,240 0,0 1 1584,876M382,842A578,210 0,0 1 1538,842M428,808A532,180 0,0 1 1492,808M474,774A486,150 0,0 1 1446,774M520,740A440,120 0,0 1 1400,740M566,706A394,90 0,0 1 1354,706M612,672A348,60 0,0 1 1308,672M658,638A302,30 0,0 1 1262,638" />
+    <path android:fillColor="#FFD9AE7E" android:pathData="M440,1080A520,180 0,0 1 1480,1080Z" />
+    <path android:fillColor="#FFE2B98A" android:pathData="M500,560h920v300h-920z" />
+    <path android:fillColor="#FF7A5038" android:pathData="M560,780V713A23,23 0,0 1 606,713V780ZM670,780V713A23,23 0,0 1 716,713V780ZM780,780V713A23,23 0,0 1 826,713V780ZM890,780V713A23,23 0,0 1 936,713V780ZM1000,780V713A23,23 0,0 1 1046,713V780ZM1110,780V713A23,23 0,0 1 1156,713V780ZM1220,780V713A23,23 0,0 1 1266,713V780ZM1330,780V713A23,23 0,0 1 1376,713V780ZM560,660V613A23,23 0,0 1 606,613V660ZM670,660V613A23,23 0,0 1 716,613V660ZM780,660V613A23,23 0,0 1 826,613V660ZM890,660V613A23,23 0,0 1 936,613V660ZM1000,660V613A23,23 0,0 1 1046,613V660ZM1110,660V613A23,23 0,0 1 1156,613V660ZM1220,660V613A23,23 0,0 1 1266,613V660ZM1330,660V613A23,23 0,0 1 1376,613V660ZM900,760h120v100h-120z" />
+    <path android:fillColor="#FFC09468" android:pathData="M500,540h920v22h-920z" />
+</vector>

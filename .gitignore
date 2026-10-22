@@ -1,0 +1,49 @@
+# Built application files
+build/
+app/build/
+*.apk
+*.apkm
+*.aar
+
+# Gradle files
+.gradle/
+
+# Kotlin compiler session data and error logs (Kotlin 2.x)
+.kotlin/
+buildOutput/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Release signing secrets (never commit)
+keystore.properties
+*.jks
+*.keystore
+
+# Proguard / R8 mapping files
+app/proguard/
+mapping.txt
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Log files
+*.log
+
+# Android Studio profiler & captures
+captures/
+.externalNativeBuild/
+*.bak
+
+# Packaged release output
+dist/

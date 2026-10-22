@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Erzurum: the twin brick minarets of the Çifte Minareli Medrese against snowy Palandöken. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="860">
+                <item android:offset="0" android:color="#FF1E3A6E" />
+                <item android:offset="0.6" android:color="#FF7FA8D6" />
+                <item android:offset="1" android:color="#FFDCE8F2" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FFE6EDF5" android:pathData="M-40,1080L-40,700L197.6,487.4L418.9,637.2L647.5,537.2L824.1,612.9L1052.2,519.6L1309.7,651.1L1513.5,494.5L1715,684.3L1960,700L1960,1080Z" />
+    <path android:fillColor="#FFC4D1E0" android:pathData="M-40,1080L-40,760L181.9,616.5L366.8,684.6L538,605L669.9,722.8L899.3,622.5L1071.3,750.9L1220,648.2L1399,714.1L1541.7,650.1L1732.2,686.7L1960,760L1960,1080Z" />
+    <path android:fillColor="#FFC9B595" android:pathData="M720,520h480v400h-480z" />
+    <path android:fillColor="#FF8A735A" android:pathData="M800,920V696.8Q800,596 960,560Q1120,596 1120,696.8V920Z" />
+    <path android:fillColor="#FF6A5440" android:pathData="M860,920V765Q860,695 960,670Q1060,695 1060,765V920Z" />
+    <path android:fillColor="#FFA85A42" android:pathData="M736,180h68v340h-68z" />
+    <path android:strokeColor="#FF8A4532" android:strokeWidth="4" android:strokeLineCap="butt" android:fillColor="#00000000" android:pathData="M742,190V510M756,190V510M770,190V510M784,190V510M798,190V510" />
+    <path android:fillColor="#FF2E8FB8" android:pathData="M736,230h68v14h-68zM736,330h68v14h-68zM736,430h68v14h-68z" />
+    <path android:fillColor="#FFC9B595" android:pathData="M726,170h88v14h-88z" />
+    <path android:fillColor="#FFA85A42" android:pathData="M744,170L770,120L796,170Z" />
+    <path android:fillColor="#FFA85A42" android:pathData="M1116,180h68v340h-68z" />
+    <path android:strokeColor="#FF8A4532" android:strokeWidth="4" android:strokeLineCap="butt" android:fillColor="#00000000" android:pathData="M1122,190V510M1136,190V510M1150,190V510M1164,190V510M1178,190V510" />
+    <path android:fillColor="#FF2E8FB8" android:pathData="M1116,230h68v14h-68zM1116,330h68v14h-68zM1116,430h68v14h-68z" />
+    <path android:fillColor="#FFC9B595" android:pathData="M1106,170h88v14h-88z" />
+    <path android:fillColor="#FFA85A42" android:pathData="M1124,170L1150,120L1176,170Z" />
+    <path android:fillColor="#FFF2F6FA" android:pathData="M0,910h1920v170h-1920z" />
+    <path android:fillColor="#FFDCE4EE" android:pathData="M-60,1080L-60,937.9C-3.3,938.6 166.7,942.7 280,941.9C393.3,941.1 506.7,933.4 620,933.1C733.3,932.9 846.7,938.7 960,940.4C1073.3,942 1186.7,944.2 1300,943C1413.3,941.8 1526.7,937.2 1640,933C1753.3,928.7 1923.3,920 1980,917.5L1980,1080Z" />
+</vector>

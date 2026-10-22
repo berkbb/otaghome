@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.OtagHome" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="android:statusBarColor">@color/background_dark</item>
+        <item name="android:navigationBarColor">@color/background_dark</item>
+        <!-- A Home app shows the system wallpaper nowhere; keep the window opaque -->
+        <item name="android:windowShowWallpaper">false</item>
+    </style>
+</resources>

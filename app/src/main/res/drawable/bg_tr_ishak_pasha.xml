@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Doğubayazıt: İshak Paşa Palace on its rocky slope, Ağrı rising behind. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="1920dp"
+    android:height="1080dp"
+    android:viewportWidth="1920"
+    android:viewportHeight="1080">
+    <path android:pathData="M0,0h1920v1080h-1920z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="900">
+                <item android:offset="0" android:color="#FF2A5C9E" />
+                <item android:offset="0.7" android:color="#FFA9CBE8" />
+                <item android:offset="1" android:color="#FFE6EFF5" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:fillColor="#FF9A98B2" android:pathData="M900,700L1400,260L1900,700Z" />
+    <path android:fillColor="#FFF4F6FA" android:pathData="M1310,340L1400,260L1490,340L1450,330L1400,360L1350,332Z" />
+    <path android:fillColor="#FF8E7A6E" android:pathData="M-60,1080L-60,420C-16.7,410 106.7,353.3 200,360C293.3,366.7 400,426.7 500,460C600,493.3 683.3,523.3 800,560C916.7,596.7 1003.3,646.7 1200,680C1396.7,713.3 1850,746.7 1980,760L1980,1080Z" />
+    <path android:fillColor="#FF6E5A50" android:pathData="M-60,1080L-60,560C0,553.3 173.3,506.7 300,520C426.7,533.3 566.7,600 700,640C833.3,680 886.7,723.3 1100,760C1313.3,796.7 1833.3,843.3 1980,860L1980,1080Z" />
+    <path android:fillColor="#FFD8B58A" android:pathData="M500,640h760v200h-760zM680,560h300v80h-300z" />
+    <path android:fillColor="#FFB08E66" android:pathData="M1000,640h260v200h-260z" />
+    <path android:fillColor="#FFB8C4CE" android:pathData="M740,560C740,466.9 920,466.9 920,560Z" />
+    <path android:fillColor="#FFD8B58A" android:pathData="M1120,380h44v260h-44zM1110,450h64v10h-64z" />
+    <path android:fillColor="#FFB5523F" android:pathData="M1120,400h44v14h-44zM1120,470h44v14h-44zM1120,540h44v14h-44zM1120,600h44v14h-44z" />
+    <path android:fillColor="#FFD8B58A" android:pathData="M1116,380L1142,330L1168,380Z" />
+    <path android:fillColor="#FF5A3E2E" android:pathData="M760,840V734.6Q760,687 815,670Q870,687 870,734.6V840ZM560,720V692A12,12 0,0 1 584,692V720ZM620,720V692A12,12 0,0 1 644,692V720ZM680,720V692A12,12 0,0 1 704,692V720ZM1030,720V692A12,12 0,0 1 1054,692V720ZM1090,720V692A12,12 0,0 1 1114,692V720ZM1150,720V692A12,12 0,0 1 1174,692V720Z" />
+    <path android:fillColor="#FF5E4A3E" android:pathData="M-60,1080L-60,908.8C-3.3,910.2 166.7,920.2 280,917.5C393.3,914.7 506.7,891.8 620,892.5C733.3,893.1 846.7,920.4 960,921.4C1073.3,922.3 1186.7,900.6 1300,898.2C1413.3,895.8 1526.7,902.7 1640,906.7C1753.3,910.7 1923.3,919.5 1980,922.1L1980,1080Z" />
+</vector>
