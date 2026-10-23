@@ -37,6 +37,17 @@ class ReleaseParserTest {
     }
 
     @Test
+    fun theUniversalApkNameIsOffered() {
+        // Releases from 1.0.2 on name the APK like the other TV apps (see package.sh)
+        val json = release("v1.0.3", """[{"name":"otaghome-v1.0.3-universal-release.apk","browser_download_url":"https://x/u.apk","size":1500000,"digest":"sha256:$sha"},
+            {"name":"SHA256SUMS","browser_download_url":"https://x/s"}]""")
+        assertEquals(
+            UpdateStatus.Available("1.0.3", "1.0.2", ReleaseApk("v1.0.3", "https://x/u.apk", 1_500_000, sha)),
+            ReleaseParser.status(json, "1.0.2")
+        )
+    }
+
+    @Test
     fun theSameOrAnOlderReleaseIsUpToDate() {
         assertEquals(UpdateStatus.UpToDate("0.1.0"), ReleaseParser.status(release("v0.1.0"), "0.1.0"))
         assertEquals(UpdateStatus.UpToDate("0.2.0"), ReleaseParser.status(release("v0.1.9"), "0.2.0"))
