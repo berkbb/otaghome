@@ -6,6 +6,16 @@ All notable changes to OtagHome are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-23
+
+### Changed
+- Less memory: apps with a TV banner no longer keep their logo in memory as well; the app menu
+  loads the logo when it opens. Banners and logos are drawn at the same size and quality as before.
+
+### Fixed
+- Memory grew by about 12 MB after the first return to the home screen and stayed there: every
+  return rendered all banners again. Now only new or updated apps get their art drawn again.
+
 ## [1.0.1] - 2026-10-23
 
 ### Added

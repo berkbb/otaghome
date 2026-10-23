@@ -60,7 +60,7 @@ check (GitHub, only when you press Check for updates):
 Download `otaghome-v<version>-release.apk` and install it with a file manager, or:
 
 ```sh
-adb install -r otaghome-v1.0.1-release.apk
+adb install -r otaghome-v1.0.2-release.apk
 ```
 
 To make it the home screen, press Home and choose OtagHome (where the TV offers the choice).
