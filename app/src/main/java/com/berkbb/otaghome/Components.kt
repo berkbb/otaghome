@@ -36,6 +36,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -43,6 +44,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.ui.geometry.Offset
@@ -50,6 +52,7 @@ import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.round
 import kotlinx.coroutines.launch
@@ -68,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
+import kotlin.math.roundToInt
 import java.util.Date
 
 /**
@@ -104,60 +108,81 @@ internal fun TopBar(
     val network by rememberNetworkStatus()
     val open = rememberOpener()
 
-    Box(modifier = modifier.fillMaxWidth()) {
-        Clock(weather = weather, temperatureUnit = temperatureUnit, clockFormat = clockFormat, modifier = Modifier.align(Alignment.CenterStart))
+    // Measured rather than fixed, so the tabs never run into the clock or the buttons on any screen
+    Layout(
+        modifier = modifier.fillMaxWidth(),
+        content = {
+            Clock(weather = weather, temperatureUnit = temperatureUnit, clockFormat = clockFormat)
 
-        TabBar(
-            tab = tab,
-            onSelectTab = onSelectTab,
-            favoritesTabFocus = favoritesTabFocus,
-            allAppsTabFocus = allAppsTabFocus,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .upTarget("tabs", onFocusTabs)
-        )
+            TabBar(
+                tab = tab,
+                onSelectTab = onSelectTab,
+                favoritesTabFocus = favoritesTabFocus,
+                allAppsTabFocus = allAppsTabFocus,
+                modifier = Modifier.upTarget("tabs", onFocusTabs)
+            )
 
-        Row(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            PitwallIconButton(
-                iconRes = R.drawable.ic_search,
-                contentDescription = searchLabel,
-                // Left goes back to the selected tab rather than onto the other one, which would switch tabs
-                modifier = Modifier
-                    .upButton(0)
-                    .focusProperties { left = if (tab == LauncherTab.FAVORITES) favoritesTabFocus else allAppsTabFocus },
-                onClick = { open(context.keyboardSearchIntent(), searchLabel) }
-            )
-            PitwallIconButton(
-                iconRes = R.drawable.ic_mic,
-                contentDescription = voiceLabel,
-                modifier = Modifier.upButton(1),
-                onClick = { open(context.voiceSearchIntent(), voiceLabel) }
-            )
-            PitwallIconButton(
-                iconRes = R.drawable.ic_input,
-                contentDescription = inputsLabel,
-                modifier = Modifier.upButton(2),
-                onClick = { open(context.inputsIntent(), inputsLabel) }
-            )
-            PitwallIconButton(
-                iconRes = network.iconRes,
-                contentDescription = networkDescription(network),
-                modifier = Modifier.upButton(3),
-                onClick = { open(context.wifiSettingsIntent(), networkLabel) }
-            )
-            PitwallIconButton(
-                iconRes = R.drawable.ic_settings,
-                contentDescription = stringResource(R.string.settings_title),
-                modifier = Modifier.upButton(4),
-                onClick = onOpenSettings
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                PitwallIconButton(
+                    iconRes = R.drawable.ic_search,
+                    contentDescription = searchLabel,
+                    // Left goes back to the selected tab rather than onto the other one, which would switch tabs
+                    modifier = Modifier
+                        .upButton(0)
+                        .focusProperties { left = if (tab == LauncherTab.FAVORITES) favoritesTabFocus else allAppsTabFocus },
+                    onClick = { open(context.keyboardSearchIntent(), searchLabel) }
+                )
+                PitwallIconButton(
+                    iconRes = R.drawable.ic_mic,
+                    contentDescription = voiceLabel,
+                    modifier = Modifier.upButton(1),
+                    onClick = { open(context.voiceSearchIntent(), voiceLabel) }
+                )
+                PitwallIconButton(
+                    iconRes = R.drawable.ic_input,
+                    contentDescription = inputsLabel,
+                    modifier = Modifier.upButton(2),
+                    onClick = { open(context.inputsIntent(), inputsLabel) }
+                )
+                PitwallIconButton(
+                    iconRes = network.iconRes,
+                    contentDescription = networkDescription(network),
+                    modifier = Modifier.upButton(3),
+                    onClick = { open(context.wifiSettingsIntent(), networkLabel) }
+                )
+                PitwallIconButton(
+                    iconRes = R.drawable.ic_settings,
+                    contentDescription = stringResource(R.string.settings_title),
+                    modifier = Modifier.upButton(4),
+                    onClick = onOpenSettings
+                )
+            }
+        }
+    ) { measurables, constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val clock = measurables[0].measure(loose)
+        val tabs = measurables[1].measure(loose.copy(maxWidth = Constraints.Infinity))
+        val buttons = measurables[2].measure(loose)
+        val width = constraints.maxWidth
+        val placement = placeTabs(width, clock.width, buttons.width, tabs.width, TOP_BAR_GAP.roundToPx())
+        val height = maxOf(clock.height, buttons.height, (tabs.height * placement.scale).roundToInt())
+        layout(width, height) {
+            clock.place(0, (height - clock.height) / 2)
+            buttons.place(width - buttons.width, (height - buttons.height) / 2)
+            tabs.placeWithLayer(placement.x.roundToInt(), ((height - tabs.height * placement.scale) / 2f).roundToInt()) {
+                scaleX = placement.scale
+                scaleY = placement.scale
+                transformOrigin = TransformOrigin(0f, 0f)
+            }
         }
     }
 }
+
+/** Space the tabs keep from the clock and from the buttons. */
+private val TOP_BAR_GAP = 24.dp
 
 @Composable
 internal fun rememberNetworkStatus(): State<NetworkStatus> {
