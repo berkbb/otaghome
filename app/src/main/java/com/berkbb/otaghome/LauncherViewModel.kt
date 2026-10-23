@@ -109,6 +109,8 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     val uiState: StateFlow<LauncherUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
+    /** Package → activity and last update time the current art was rendered for. */
+    private var artStamps: Map<String, String> = emptyMap()
 
     private val _weatherSettings = MutableStateFlow(readWeatherSettings())
     val weatherSettings: StateFlow<WeatherSettings> = _weatherSettings.asStateFlow()
@@ -186,9 +188,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     /** Re-reads the installed apps; called on every resume so installs and removals show up. */
     fun refresh() {
         if (loadJob?.isActive == true) return
+        val previousArt = _uiState.value.art
+        val previousStamps = artStamps
         loadJob = viewModelScope.launch {
-            val (apps, art) = withContext(Dispatchers.IO) { loadApps() }
-            _uiState.update { it.copy(isLoading = false, apps = apps, art = art) }
+            val (apps, loaded) = withContext(Dispatchers.IO) { loadApps(previousArt, previousStamps) }
+            artStamps = loaded.stamps
+            _uiState.update { it.copy(isLoading = false, apps = apps, art = loaded.art) }
         }
     }
 
@@ -370,7 +375,13 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return runCatching { getApplication<Application>().startActivity(intent) }.isSuccess
     }
 
-    private fun loadApps(): Pair<List<AppEntry>, Map<String, AppArt>> {
+    private class LoadedArt(val art: Map<String, AppArt>, val stamps: Map<String, String>)
+
+    /**
+     * Reads the installed apps and their art. Art of an app that has not changed since [previousStamps]
+     * is reused: rendering every banner again on each resume kept a second copy of all of them.
+     */
+    private fun loadApps(previousArt: Map<String, AppArt>, previousStamps: Map<String, String>): Pair<List<AppEntry>, LoadedArt> {
         val pm = getApplication<Application>().packageManager
         val self = getApplication<Application>().packageName
         val tvInfos = query(pm, Intent.CATEGORY_LEANBACK_LAUNCHER)
@@ -396,8 +407,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             phoneApps = phoneInfos.map { toEntry(it, isTv = false) },
             selfPackage = self
         )
+        val stamps = apps.associate { entry ->
+            val updated = runCatching { pm.getPackageInfo(entry.packageName, 0).lastUpdateTime }.getOrDefault(0L)
+            entry.packageName to "${entry.className}@$updated"
+        }
         // A broken drawable from one app must not take the whole launcher down
         val art = apps.associate { entry ->
+            val kept = previousArt[entry.packageName]?.takeIf { previousStamps[entry.packageName] == stamps[entry.packageName] }
+            if (kept != null) return@associate entry.packageName to kept
             val info = infoByKey[entry.packageName to entry.className]
             val banner = info?.let { runCatching { it.activityInfo.loadBanner(pm) ?: it.activityInfo.applicationInfo.loadBanner(pm) }.getOrNull() }
             val icon = info?.let { runCatching { it.loadIcon(pm) }.getOrNull() }
@@ -413,7 +430,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 color = color
             )
         }
-        return apps to art
+        return apps to LoadedArt(art, stamps)
     }
 
     private fun query(pm: PackageManager, category: String): List<ResolveInfo> {
