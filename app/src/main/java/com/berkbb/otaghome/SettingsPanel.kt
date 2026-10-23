@@ -434,6 +434,7 @@ private fun SortRows(
 /** Shortcuts into the system's language, network and full settings screens. */
 @Composable
 private fun SystemRows() {
+    val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
     val network by rememberNetworkStatus()
     val languageLabel = stringResource(R.string.settings_language)
@@ -451,7 +452,7 @@ private fun SystemRows() {
         iconRes = network.iconRes,
         title = networkLabel,
         value = networkDescription(network),
-        onClick = { open(Intent(Settings.ACTION_WIFI_SETTINGS), networkLabel) }
+        onClick = { open(context.wifiSettingsIntent(), networkLabel) }
     )
     SettingsRow(
         iconRes = R.drawable.ic_settings,

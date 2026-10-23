@@ -181,7 +181,25 @@ internal fun Context.inputsIntent(): Intent {
     return intent
 }
 
+/**
+ * The Wi-Fi network list. Most TVs show it for the Wi-Fi settings intent, but some (Philips) send
+ * that intent to their own connection wizard; when the Wi-Fi picker lives in a different app than
+ * the settings handler, the picker is opened instead.
+ */
+internal fun Context.wifiSettingsIntent(): Intent {
+    val settings = Intent(Settings.ACTION_WIFI_SETTINGS)
+    val picker = Intent(ACTION_SETUP_WIFI_NETWORK)
+    val settingsApp = runCatching { settings.resolveActivity(packageManager)?.packageName }.getOrNull()
+    val pickerApp = runCatching { picker.resolveActivity(packageManager)?.packageName }.getOrNull()
+    return if (prefersWifiPicker(settingsApp, pickerApp)) picker else settings
+}
+
+/** The Wi-Fi picker is used when the TV has one and the settings intent goes to another app. */
+internal fun prefersWifiPicker(settingsApp: String?, pickerApp: String?): Boolean =
+    pickerApp != null && pickerApp != settingsApp
+
 private const val ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS"
+private const val ACTION_SETUP_WIFI_NETWORK = "com.android.net.wifi.SETUP_WIFI_NETWORK"
 private const val GOOGLE_TV_LAUNCHER = "com.google.android.tvlauncher"
 
 @Composable

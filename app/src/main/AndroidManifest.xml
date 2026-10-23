@@ -26,6 +26,13 @@
         <intent>
             <action android:name="com.android.tv.action.VIEW_INPUTS" />
         </intent>
+        <!-- The Wi-Fi settings and network picker opened by the network button -->
+        <intent>
+            <action android:name="android.settings.WIFI_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="com.android.net.wifi.SETUP_WIFI_NETWORK" />
+        </intent>
     </queries>
 
     <uses-feature

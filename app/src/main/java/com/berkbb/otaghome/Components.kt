@@ -1,7 +1,6 @@
 package com.berkbb.otaghome
 
 import android.content.Intent
-import android.provider.Settings
 import android.text.format.DateFormat
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.animateColorAsState
@@ -141,7 +140,7 @@ internal fun TopBar(
                 iconRes = network.iconRes,
                 contentDescription = networkDescription(network),
                 modifier = Modifier.upButton(2),
-                onClick = { open(Intent(Settings.ACTION_WIFI_SETTINGS), networkLabel) }
+                onClick = { open(context.wifiSettingsIntent(), networkLabel) }
             )
             PitwallIconButton(
                 iconRes = R.drawable.ic_settings,
