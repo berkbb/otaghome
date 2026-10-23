@@ -57,15 +57,15 @@ check (GitHub, only when you press Check for updates):
 
 ## Install
 
-Download `otaghome-v<version>-release.apk` and install it with a file manager, or:
+Download `otaghome-v<version>-universal-release.apk` and install it with a file manager, or:
 
 ```sh
-adb install -r otaghome-v1.0.2-release.apk
+adb install -r otaghome-v1.0.2-universal-release.apk
 ```
 
 To make it the home screen, press Home and choose OtagHome (where the TV offers the choice).
 
 ## Build
 
-See [DEVELOPMENT.md](DEVELOPMENT.md). In short: `./package.sh` runs the tests and leaves the APK
+See [DEVELOPMENT.md](DEVELOPMENT.md). In short: `./package.sh` (or double-click `package.command` in Finder) runs the tests and leaves the APK
 and its checksum in `dist/`.

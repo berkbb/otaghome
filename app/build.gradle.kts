@@ -80,9 +80,9 @@ kotlin {
     }
 }
 
-// Pure Kotlin, no native libraries: one APK serves every ABI
+// Pure Kotlin, no native libraries: one universal APK serves every ABI (named like the other TV apps)
 base {
-    archivesName.set("otaghome-v$appVersionName")
+    archivesName.set("otaghome-v$appVersionName-universal")
 }
 
 androidComponents {

@@ -40,7 +40,7 @@ if [[ -z "$VERSION" ]]; then
     echo "❌ Could not read appVersionName from app/build.gradle.kts." >&2
     exit 1
 fi
-APK="app/build/outputs/apk/release/otaghome-v${VERSION}-release.apk"
+APK="app/build/outputs/apk/release/otaghome-v${VERSION}-universal-release.apk"
 
 # Signing check: installed apps (and their in-app update) only accept a new version signed with the
 # same key. release-cert.sha256 holds the expected certificate; a mismatch is reported, not fatal.
@@ -91,7 +91,7 @@ mkdir -p dist
 cp "$APK" dist/
 (cd dist && shasum -a 256 *.apk > SHA256SUMS)
 
-check_release_signing "dist/otaghome-v${VERSION}-release.apk"
+check_release_signing "dist/otaghome-v${VERSION}-universal-release.apk"
 
 echo "✅ Release package ready in dist/:"
 (cd dist && ls -lh *.apk | awk '{print "   " $NF " (" $5 ")"}')

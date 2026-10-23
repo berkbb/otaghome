@@ -14,12 +14,12 @@ beyond AndroidX, vector artwork only, and network use limited to the weather. Re
 
 ```sh
 ./gradlew test                 # unit tests (must pass before any change is done)
-./gradlew assembleRelease      # app/build/outputs/apk/release/otaghome-v<version>-release.apk
-./package.sh                   # clean + test + release APK and SHA256SUMS in dist/
+./gradlew assembleRelease      # app/build/outputs/apk/release/otaghome-v<version>-universal-release.apk
+./package.sh                   # clean + test + release APK and SHA256SUMS in dist/ (Finder: package.command)
 ```
 
 The update check reads `https://api.github.com/repos/berkbb/otaghome/releases/latest` and installs
-the first `*-release.apk` asset; publish `dist/otaghome-v<version>-release.apk` there with a `v<version>`
+the first `*-release.apk` asset; publish `dist/otaghome-v<version>-universal-release.apk` there with a `v<version>`
 tag. Only the release variant exists. Without `keystore.properties` or `OTAGHOME_KEYSTORE_FILE` the
 release is signed with the machine's debug key; `release-cert.sha256` records the expected
 certificate and `package.sh` warns on a mismatch. A different key means installed TVs cannot
@@ -29,7 +29,7 @@ update without uninstalling first.
 
 ```sh
 adb connect <tv-ip>:5555
-adb install -r app/build/outputs/apk/release/otaghome-v1.0.2-release.apk
+adb install -r app/build/outputs/apk/release/otaghome-v1.0.2-universal-release.apk
 adb shell am start -n com.berkbb.otaghome/.MainActivity
 adb exec-out screencap -p > screen.png
 ```

@@ -6,6 +6,13 @@ All notable changes to OtagHome are listed here. The format follows
 
 ## [Unreleased]
 
+### Changed
+- The release APK is now named `otaghome-v<version>-universal-release.apk`, like the other TV
+  apps; the in-app update still finds it (it takes the first `*-release.apk` asset).
+
+### Added
+- `package.command`: double-click launcher for `package.sh` in macOS Finder.
+
 ## [1.0.2] - 2026-10-23
 
 ### Changed
