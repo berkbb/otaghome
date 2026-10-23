@@ -6,6 +6,21 @@ All notable changes to OtagHome are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-23
+
+### Added
+- Search button in the top bar: opens Google search with the keyboard, for remotes without a
+  microphone. The voice search button stays next to it.
+
+### Changed
+- The top bar measures the screen: the tabs stay centred while they fit, otherwise they sit
+  between the clock and the buttons and shrink just enough, so nothing overlaps at any
+  resolution, font size or language.
+
+### Fixed
+- The network button opens the Wi-Fi network list on TVs that send the Wi-Fi settings to their
+  own connection wizard (Philips).
+
 ## [1.0.0] - 2026-10-22
 
 First release. Started as "Paddock" (`com.berkbb.paddock`), renamed to OtagHome
