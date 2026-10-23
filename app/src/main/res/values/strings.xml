@@ -3,6 +3,7 @@
 
     <string name="tab_favorites">Favorites</string>
     <string name="tab_all_apps">All apps</string>
+    <string name="cd_search">Search</string>
     <string name="cd_voice_search">Voice search</string>
     <string name="cd_inputs">Inputs</string>
 

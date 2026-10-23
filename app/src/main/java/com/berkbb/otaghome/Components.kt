@@ -72,7 +72,7 @@ import java.util.Date
 
 /**
  * Top bar: the clock on the left, the tabs in the centre, and Pitwall-style buttons on the right
- * for voice search, inputs, network and settings.
+ * for search, voice search, inputs, network and settings.
  */
 @Composable
 internal fun TopBar(
@@ -90,13 +90,14 @@ internal fun TopBar(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val buttonFocus = remember { List(4) { FocusRequester() } }
+    val buttonFocus = remember { List(5) { FocusRequester() } }
     // Each control records where it sits, so a card can send Up to the one above it
     fun Modifier.upTarget(key: String, focus: () -> Unit) = onGloballyPositioned {
         upTargets.place(key, it.boundsInRoot().center.x, focus)
     }
     fun Modifier.upButton(index: Int) = focusRequester(buttonFocus[index])
         .upTarget("button$index") { buttonFocus[index].requestFocus() }
+    val searchLabel = stringResource(R.string.cd_search)
     val voiceLabel = stringResource(R.string.cd_voice_search)
     val networkLabel = stringResource(R.string.settings_network)
     val inputsLabel = stringResource(R.string.cd_inputs)
@@ -122,30 +123,36 @@ internal fun TopBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             PitwallIconButton(
-                iconRes = R.drawable.ic_mic,
-                contentDescription = voiceLabel,
+                iconRes = R.drawable.ic_search,
+                contentDescription = searchLabel,
                 // Left goes back to the selected tab rather than onto the other one, which would switch tabs
                 modifier = Modifier
                     .upButton(0)
                     .focusProperties { left = if (tab == LauncherTab.FAVORITES) favoritesTabFocus else allAppsTabFocus },
+                onClick = { open(context.keyboardSearchIntent(), searchLabel) }
+            )
+            PitwallIconButton(
+                iconRes = R.drawable.ic_mic,
+                contentDescription = voiceLabel,
+                modifier = Modifier.upButton(1),
                 onClick = { open(context.voiceSearchIntent(), voiceLabel) }
             )
             PitwallIconButton(
                 iconRes = R.drawable.ic_input,
                 contentDescription = inputsLabel,
-                modifier = Modifier.upButton(1),
+                modifier = Modifier.upButton(2),
                 onClick = { open(context.inputsIntent(), inputsLabel) }
             )
             PitwallIconButton(
                 iconRes = network.iconRes,
                 contentDescription = networkDescription(network),
-                modifier = Modifier.upButton(2),
+                modifier = Modifier.upButton(3),
                 onClick = { open(context.wifiSettingsIntent(), networkLabel) }
             )
             PitwallIconButton(
                 iconRes = R.drawable.ic_settings,
                 contentDescription = stringResource(R.string.settings_title),
-                modifier = Modifier.upButton(3),
+                modifier = Modifier.upButton(4),
                 onClick = onOpenSettings
             )
         }

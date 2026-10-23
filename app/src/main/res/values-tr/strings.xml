@@ -3,6 +3,7 @@
 
     <string name="tab_favorites">Favoriler</string>
     <string name="tab_all_apps">Tüm uygulamalar</string>
+    <string name="cd_search">Arama</string>
     <string name="cd_voice_search">Sesli arama</string>
     <string name="cd_inputs">Kaynaklar</string>
 

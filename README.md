@@ -19,7 +19,7 @@ Material 3 shapes.
 - Long press OK (or Menu) on an app: Move, App info, Add to / Remove from Favorites, Hide, Uninstall.
 - Move mode: the card lifts, the arrows move it, OK or Back drops it; the order is kept.
 - Top bar: clock with weekday and date (and the weather), the tabs in the centre, and buttons
-  for voice search, inputs (HDMI, tuner), network and settings.
+  for search (keyboard), voice search, inputs (HDMI, tuner), network and settings.
 - Up from the first row goes to the control right above the card.
 - Messages slide up from the bottom with an icon, a close button and a countdown.
 - A full-screen progress ring covers the screen while it is rebuilt or redrawn.

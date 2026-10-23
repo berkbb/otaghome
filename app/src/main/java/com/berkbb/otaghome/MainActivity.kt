@@ -168,6 +168,15 @@ internal fun Context.voiceSearchIntent(): Intent {
 }
 
 /**
+ * Google search with the keyboard, for remotes without a microphone. Global search is the fallback,
+ * though some TVs start it listening.
+ */
+internal fun Context.keyboardSearchIntent(): Intent {
+    val assist = Intent(Intent.ACTION_ASSIST).putExtra(Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD, true)
+    return if (assist.resolveActivity(packageManager) != null) assist else Intent(SearchManager.INTENT_ACTION_GLOBAL_SEARCH)
+}
+
+/**
  * The TV's input picker (HDMI, tuner…), as the stock launcher's Inputs button opens it. Google's
  * panel is preferred when the TV has it, otherwise the manufacturer's.
  */
