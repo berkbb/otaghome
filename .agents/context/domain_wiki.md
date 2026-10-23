@@ -19,6 +19,11 @@
   themes, the rest are per theme.
 - **Weather**: Open-Meteo, shown in the clock card as an icon and temperature with the place
   name. The place is a searched city or, only with consent, found from the internet address.
+- **Top-bar buttons**: search (assistant with the keyboard), voice search (assistant intent,
+  falling back to global search), inputs, network and settings. The network button opens the
+  Wi-Fi network list; on TVs that send the Wi-Fi settings to their own wizard (Philips) it opens
+  the network picker instead (`wifiSettingsIntent`). Confirmed working on an Arçelik TV with
+  Android 11 (1.0.1): network, search and voice search.
 - **Footer**: messages with an icon, close button and countdown; it takes its own room.
 - **Hidden apps**: hidden from both tabs; listed in Settings → Apps, OK shows one again.
 - **Busy ring**: covers the screen while apps load after the activity is (re)created and for a

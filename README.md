@@ -41,6 +41,12 @@ Material 3 shapes.
 Everything shown on the background (focus frames, status lines) picks its colours by contrast
 against the background, so it stays readable on any colour, gradient or picture.
 
+## Tested TVs
+
+| TV | Android | Checked |
+|---|---|---|
+| Arçelik | 11 | OtagHome 1.0.1: the network (Wi-Fi), search (keyboard) and voice search buttons work |
+
 ## Privacy
 
 No accounts, no analytics, no tracking. Network use is limited to the weather and the update

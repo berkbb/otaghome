@@ -34,6 +34,9 @@ adb shell am start -n com.berkbb.otaghome/.MainActivity
 adb exec-out screencap -p > screen.png
 ```
 
+After checking a TV, add it to *Tested TVs* in the README with its Android version and what was
+checked.
+
 Keep key presses at least a second apart when driving the UI over adb; faster presses are
 merged and focus ends up somewhere unexpected.
 
