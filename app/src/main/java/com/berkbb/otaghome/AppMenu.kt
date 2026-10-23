@@ -1,5 +1,6 @@
 package com.berkbb.otaghome
 
+import android.content.ComponentName
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -11,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -19,11 +21,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -32,6 +37,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.core.graphics.drawable.toBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /** One entry of an app's long-press menu. */
 data class MenuAction(@param:DrawableRes val iconRes: Int, @param:StringRes val labelRes: Int, val run: () -> Unit)
@@ -50,6 +58,7 @@ internal fun AppMenu(
 ) {
     val palette = LocalPalette.current
     val firstFocus = remember { FocusRequester() }
+    val icon = art?.icon ?: rememberActivityIcon(entry)
     Dialog(onDismissRequest = onDismiss) {
         LaunchedEffect(Unit) { runCatching { firstFocus.requestFocus() } }
         Column(
@@ -64,7 +73,7 @@ internal fun AppMenu(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
-                art?.icon?.let {
+                icon?.let {
                     Image(bitmap = it, contentDescription = null, modifier = Modifier.size(44.dp).clip(Corners.medium))
                     Spacer(modifier = Modifier.width(14.dp))
                 }
@@ -162,4 +171,18 @@ internal fun ChoiceDialog(
             }
         }
     }
+}
+
+/** The logo of an app that has a banner: its card keeps only the banner, so the menu loads the logo itself. */
+@Composable
+private fun rememberActivityIcon(entry: AppEntry): ImageBitmap? {
+    val context = LocalContext.current
+    return produceState<ImageBitmap?>(null, entry.packageName, entry.className) {
+        value = withContext(Dispatchers.IO) {
+            runCatching {
+                context.packageManager.getActivityIcon(ComponentName(entry.packageName, entry.className))
+                    .toBitmap(LauncherViewModel.ICON_PX, LauncherViewModel.ICON_PX).asImageBitmap()
+            }.getOrNull()
+        }
+    }.value
 }

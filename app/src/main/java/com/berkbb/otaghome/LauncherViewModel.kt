@@ -24,8 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Artwork of one app's card: the TV banner (if it has one), the logo, and the logo's colour as the
- * background when there is no banner.
+ * Artwork of one app's card: the TV banner (if it has one), otherwise the logo, and the logo's
+ * colour as the background when there is no banner.
  */
 data class AppArt(val banner: ImageBitmap?, val icon: ImageBitmap?, val color: Int?)
 
@@ -76,7 +76,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         // Banners are 16:9 (320×180 dp in the platform guidelines); icons are drawn at most 96 dp
         private const val BANNER_WIDTH_PX = 480
         private const val BANNER_HEIGHT_PX = 270
-        private const val ICON_PX = 192
+        internal const val ICON_PX = 192
     }
 
     private val prefs = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -405,9 +405,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val color = iconBitmap?.let { bmp ->
                 IntArray(bmp.width * bmp.height).also { bmp.getPixels(it, 0, bmp.width, 0, 0, bmp.width, bmp.height) }
             }?.let(ArtColor::dominant)
+            val bannerBitmap = banner?.render(BANNER_WIDTH_PX, BANNER_HEIGHT_PX)
             entry.packageName to AppArt(
-                banner = banner?.render(BANNER_WIDTH_PX, BANNER_HEIGHT_PX),
-                icon = iconBitmap?.asImageBitmap(),
+                banner = bannerBitmap,
+                // The card draws the logo only without a banner; keeping it anyway costs ~150 KB per app
+                icon = if (bannerBitmap == null) iconBitmap?.asImageBitmap() else null,
                 color = color
             )
         }
