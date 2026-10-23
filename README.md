@@ -46,6 +46,7 @@ against the background, so it stays readable on any colour, gradient or picture.
 | TV | Android | Checked |
 |---|---|---|
 | Arçelik | 11 | OtagHome 1.0.1: the network (Wi-Fi), search (keyboard) and voice search buttons work |
+| Philips 49PUS7503 (TPM171E) | 8 | OtagHome 1.0.2: works as the home screen |
 
 ## Privacy
 
