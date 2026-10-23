@@ -80,7 +80,7 @@ kotlin {
     }
 }
 
-// Pure Kotlin, no native libraries: one universal APK serves every ABI (named like the other TV apps)
+// Pure Kotlin; the only native code is Compose's ~10 KB androidx.graphics.path per ABI, so one universal APK serves every ABI (named like the other TV apps)
 base {
     archivesName.set("otaghome-v$appVersionName-universal")
 }
