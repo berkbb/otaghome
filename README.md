@@ -32,7 +32,8 @@ Material 3 shapes.
   your own picture, a solid colour or a gradient; an overlay (Normal, Light, Off) for pictures.
 - Weather in the clock card, from [Open-Meteo](https://open-meteo.com); the city is chosen by
   search or, only after you allow it, found from the internet address.
-- Display: clock format, card size, app names on cards, start tab, message duration.
+- Display: clock format, card size, app names on cards, start tab, Home button to OtagHome
+  (off by default; see *Make it the home screen*), message duration.
 - Apps: system apps (TV apps only, hidden, or all), order of Favorites and of All apps (your own
   or by name), and the apps you hid.
 - Back up all settings to a file and restore them, for example on another TV.
@@ -56,6 +57,9 @@ check (GitHub, only when you press Check for updates):
 - Only if you allow it, ipwho.is (or ipapi.co when it does not answer) receives the TV's internet
   address to find the city. You are asked first, and can change this in Settings → Weather.
 
+The optional Home override is an accessibility service, off until you turn it on. It only
+notices when the TV's own home screen opens; it reads nothing on the screen and sends nothing.
+
 ## Install
 
 Download `otaghome-v<version>-universal-release.apk` and install it with a file manager, or:
@@ -73,7 +77,12 @@ then Always. Some TVs offer the same choice under Settings → Apps → Default 
 
 **Google TV and most newer Android TVs** never ask: their own home screen always opens. Either:
 
-- Turn the TV's own home screen off over adb (debugging on in Developer options). Find its package
+- Turn on Settings → Display → Home button to OtagHome. OtagHome explains its accessibility
+  service and opens Accessibility, where you turn OtagHome on. From then on OtagHome opens
+  whenever the TV's own home screen comes up, which may show for a moment first. The same row
+  turns it off. If a newer TV will not let you turn it on, allow restricted settings in
+  OtagHome's App info first.
+- Or turn the TV's own home screen off over adb (debugging on in Developer options). Find its package
   among the home screens:
 
   ```sh
@@ -96,8 +105,8 @@ then Always. Some TVs offer the same choice under Settings → Apps → Default 
 
   Some TVs turn their home screen back on after a system update; run `disable-user` again.
   Screens that belong to the TV's own home screen may not open while it is off.
-- Or remap the Home button: an app that remaps buttons through Accessibility (a "button mapper")
-  can open OtagHome when Home is pressed. The TV's own home screen stays, and no adb is needed.
+- Or remap the Home button with another app that does it through Accessibility (a "button
+  mapper"), so that Home opens OtagHome.
 
 ## Build
 
