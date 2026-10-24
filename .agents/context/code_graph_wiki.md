@@ -12,10 +12,11 @@ weather (`WeatherPage`), About (`AboutWindow`).
 
 Also: `Display.kt` (tabs, clock format, card size, start tab, `Backup`), `SelfUpdate.kt`
 (update check and install, `InstallResultReceiver`, `SelfUpdateRestartReceiver`), `Busy.kt`
-(`BusyOverlay`, `LocalBusy`).
+(`BusyOverlay`, `LocalBusy`), `HomeOverride.kt` (`HomeOverride` targets, `HomeOverrideService`;
+its row and dialog are `HomeOverrideRow` / `HomeOverrideDialog` on the Display page).
 
 Pure, unit-tested logic: `AppCatalog`, `BackgroundSpec`, `Backup`, `ClockFormat`, `CardSize`,
-`StartTab`, `ReleaseParser`, `TempUnit`, `ThemeMode`/`Palette`/`ColorRole`,
+`StartTab`, `ReleaseParser`, `HomeOverride`, `TempUnit`, `ThemeMode`/`Palette`/`ColorRole`,
 `BackdropColors`, `ArtColor`, `ColorMath`, `HexColor`, `Weather*`, `NoticeTimer`, `UpTargets`,
 `RoomyBringIntoView`, `NetworkStatus.wifiBars`.
 

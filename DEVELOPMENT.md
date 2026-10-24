@@ -57,6 +57,7 @@ merged and focus ends up somewhere unexpected.
 | `Weather.kt`, `UpTargets.kt`, `RoomyBringIntoView.kt`, `NetworkStatus.kt` | Weather model and client, Up navigation, scroll margins, network icon |
 | `Display.kt` | Tabs, clock format, card size, start tab, settings backup format |
 | `SelfUpdate.kt` | Update check against GitHub releases, download with digest check, install, restart |
+| `HomeOverride.kt` | Optional Home override: the TV's own home screens and the accessibility service that opens OtagHome over them |
 | `Busy.kt` | Full-screen progress ring while the screen is rebuilt or redrawn |
 
 Pure logic stays out of Compose so it can be unit-tested; every such file has a test in

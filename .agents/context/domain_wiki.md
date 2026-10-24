@@ -30,3 +30,9 @@
   short pulse after changes that redraw it (`LocalBusy`).
 - **Backup**: every preference as JSON (`Backup`), minus the weather cache and a picture chosen
   on this TV; restoring recreates the activity.
+- **Home override**: for TVs whose own home screen always wins the Home button. An optional
+  accessibility service (Settings → Display, off by default; its state is the service's own, not
+  a preference, so it is not backed up) opens OtagHome when the TV's own home activity comes up.
+  Targets are system Home apps with a priority of 0 or more, matched by activity class, so other
+  screens of the same app (Google's input panel) still open. OtagHome opened this way, or by Home
+  later, counts as the Home app, so Back does not close it.
