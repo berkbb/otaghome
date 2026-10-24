@@ -9,9 +9,15 @@ All notable changes to OtagHome are listed here. The format follows
 ### Changed
 - The release APK is now named `otaghome-v<version>-universal-release.apk`, like the other TV
   apps; the in-app update still finds it (it takes the first `*-release.apk` asset).
+- Back no longer closes OtagHome once Home has brought it up, even if it was first opened from
+  the apps list.
 
 ### Added
 - `package.command`: double-click launcher for `package.sh` in macOS Finder.
+- Settings → Display → Home button to OtagHome, off by default: for TVs that never offer a choice
+  of home screen (Google TV and most newer Android TVs). OtagHome's accessibility service opens
+  OtagHome whenever the TV's own home screen comes up; it notices only that screen opening and
+  reads nothing on the screen. A dialog explains it before Accessibility opens.
 
 ## [1.0.2] - 2026-10-23
 
