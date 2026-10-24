@@ -216,4 +216,10 @@
     <string name="update_download_failed">Descărcarea a eșuat sau suma de control nu se potrivește</string>
     <string name="update_install_failed">Actualizarea nu a putut fi instalată</string>
     <string name="update_permission">Permiteți OtagHome să instaleze aplicații, apoi încercați din nou</string>
+    <string name="settings_home_override">Butonul Home către OtagHome</string>
+    <string name="settings_accessibility">Accesibilitate</string>
+    <string name="home_override_title">Butonul Home să deschidă OtagHome?</string>
+    <string name="home_override_text">Pe televizoarele care nu vă lasă să alegeți ecranul principal, OtagHome se poate deschide singur ori de câte ori apare ecranul principal al televizorului. Pentru aceasta este nevoie de serviciul de accesibilitate OtagHome: în ecranul următor, alegeți OtagHome și porniți-l. Serviciul observă doar când se deschide ecranul principal al televizorului; nu citește nimic de pe ecran și nu trimite nimic nicăieri. Ecranul principal al televizorului poate apărea o clipă înainte. Îl puteți opri de aici sau din Accesibilitate.</string>
+    <string name="home_override_open">Deschideți Accesibilitate</string>
+    <string name="home_override_service_description">Deschide OtagHome ori de câte ori apare ecranul principal al televizorului. Nu citește nimic de pe ecran și nu trimite nimic nicăieri.</string>
 </resources>

@@ -211,7 +211,7 @@ private fun SearchField(hint: String, value: String, onValueChange: (String) -> 
 }
 
 @Composable
-private fun PillButton(text: String, primary: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+internal fun PillButton(text: String, primary: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val palette = LocalPalette.current
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()

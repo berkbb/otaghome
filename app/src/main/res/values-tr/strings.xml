@@ -216,4 +216,10 @@
     <string name="update_download_failed">İndirme başarısız oldu ya da sağlama toplamı uymadı</string>
     <string name="update_install_failed">Güncelleme kurulamadı</string>
     <string name="update_permission">OtagHome\'un uygulama yüklemesine izin verin, sonra tekrar deneyin</string>
+    <string name="settings_home_override">Home tuşunu OtagHome\'a yönlendir</string>
+    <string name="settings_accessibility">Erişilebilirlik</string>
+    <string name="home_override_title">Home tuşu OtagHome\'a yönlendirilsin mi?</string>
+    <string name="home_override_text">Ana ekranı seçtirmeyen TV\'lerde, TV\'nin kendi ana ekranı her açıldığında OtagHome kendini açabilir. Bunun için OtagHome\'un erişilebilirlik hizmeti gerekir: sonraki ekranda OtagHome\'u seçip açın. Hizmet yalnızca TV\'nin ana ekranının açıldığını fark eder; ekrandaki hiçbir şeyi okumaz, hiçbir yere bir şey göndermez. TV\'nin ana ekranı önce bir an görünebilir. Buradan ya da Erişilebilirlik\'ten kapatabilirsiniz.</string>
+    <string name="home_override_open">Erişilebilirlik\'i aç</string>
+    <string name="home_override_service_description">TV\'nin kendi ana ekranı her açıldığında OtagHome\'u açar. Ekrandaki hiçbir şeyi okumaz, hiçbir yere bir şey göndermez.</string>
 </resources>

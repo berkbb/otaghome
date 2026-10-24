@@ -216,4 +216,10 @@
     <string name="update_download_failed">The download failed or did not match its checksum</string>
     <string name="update_install_failed">The update could not be installed</string>
     <string name="update_permission">Allow OtagHome to install apps, then try again</string>
+    <string name="settings_home_override">Home button to OtagHome</string>
+    <string name="settings_accessibility">Accessibility</string>
+    <string name="home_override_title">Send the Home button to OtagHome?</string>
+    <string name="home_override_text">On TVs that do not let you choose the home screen, OtagHome can open itself whenever the TV\'s own home screen comes up. This takes OtagHome\'s accessibility service: on the next screen, choose OtagHome and turn it on. The service only notices when the TV\'s home screen opens; it reads nothing on the screen and sends nothing anywhere. The TV\'s home screen may show for a moment first. You can turn it off here or in Accessibility.</string>
+    <string name="home_override_open">Open Accessibility</string>
+    <string name="home_override_service_description">Opens OtagHome whenever the TV\'s own home screen comes up. Reads nothing on the screen and sends nothing anywhere.</string>
 </resources>

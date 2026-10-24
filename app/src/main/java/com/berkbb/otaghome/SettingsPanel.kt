@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
 
 private val SHEET_SHAPE = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
 
@@ -267,7 +268,7 @@ private fun MainPage(
     )
 }
 
-/** How the home screen looks and opens: clock format, card size, names, start tab, message time. */
+/** How the home screen looks and opens: clock format, card size, names, start tab, Home button, message time. */
 @Composable
 private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoticeSecondsChange: (Int) -> Unit, firstRowFocus: FocusRequester) {
     val display by viewModel.display.collectAsState()
@@ -299,6 +300,7 @@ private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoti
         value = stringResource(display.startTab.labelRes),
         onClick = viewModel::cycleStartTab
     )
+    HomeOverrideRow()
     SettingsRow(
         iconRes = R.drawable.ic_timer,
         title = stringResource(R.string.settings_notice_time),
@@ -314,6 +316,76 @@ private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoti
             onPick = { onNoticeSecondsChange(NoticeTimer.OPTIONS[it]) },
             onDismiss = { pickNoticeSeconds = false }
         )
+    }
+}
+
+/**
+ * The Home override, for TVs that never let another app be the home screen: OtagHome's
+ * accessibility service opens it whenever the TV's own home screen comes up. Only the user can
+ * switch the service on in Accessibility, so turning it on explains it first and opens that
+ * screen; turning it off stops the service at once.
+ */
+@Composable
+private fun HomeOverrideRow() {
+    val on by HomeOverrideService.active.collectAsState()
+    var explaining by remember { mutableStateOf(false) }
+    val accessibilityLabel = stringResource(R.string.settings_accessibility)
+    val open = rememberOpener()
+    val openAccessibility = { open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), accessibilityLabel) }
+    SettingsRow(
+        iconRes = R.drawable.ic_home,
+        title = stringResource(R.string.settings_home_override),
+        value = stringResource(if (on) R.string.state_on else R.string.state_off),
+        onClick = {
+            when {
+                !on -> explaining = true
+                !HomeOverrideService.turnOff() -> openAccessibility()
+            }
+        }
+    )
+    if (explaining) {
+        HomeOverrideDialog(
+            onOpen = {
+                explaining = false
+                openAccessibility()
+            },
+            onDismiss = { explaining = false }
+        )
+    }
+}
+
+/** What the Home override does and how to turn it on; focus starts on Cancel. */
+@Composable
+private fun HomeOverrideDialog(onOpen: () -> Unit, onDismiss: () -> Unit) {
+    val palette = LocalPalette.current
+    val cancelFocus = remember { FocusRequester() }
+    Dialog(onDismissRequest = onDismiss) {
+        LaunchedEffect(Unit) {
+            delay(50)
+            runCatching { cancelFocus.requestFocus() }
+        }
+        Column(
+            modifier = Modifier
+                .width(560.dp)
+                .shadow(16.dp, Corners.extraLarge)
+                .clip(Corners.extraLarge)
+                .background(palette.background)
+                .padding(28.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(modifier = Modifier.size(44.dp).background(palette.accent, CircleShape), contentAlignment = Alignment.Center) {
+                    Icon(painter = painterResource(R.drawable.ic_home), contentDescription = null, tint = Color.White, modifier = Modifier.size(26.dp))
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(text = stringResource(R.string.home_override_title), color = palette.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            }
+            Text(text = stringResource(R.string.home_override_text), color = palette.textSecondary, fontSize = 16.sp, lineHeight = 23.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
+                PillButton(stringResource(R.string.btn_cancel), primary = false, modifier = Modifier.focusRequester(cancelFocus), onClick = onDismiss)
+                PillButton(stringResource(R.string.home_override_open), primary = true, onClick = onOpen)
+            }
+        }
     }
 }
 
