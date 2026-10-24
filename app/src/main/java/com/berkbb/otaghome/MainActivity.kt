@@ -69,8 +69,12 @@ class MainActivity : ComponentActivity() {
 
     private val prefs by lazy { getSharedPreferences(LauncherViewModel.PREFS_NAME, Context.MODE_PRIVATE) }
 
+    /** Started as the Home app, by the system or by the Home override (HomeOverrideService). */
+    private var openedAsHome by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        openedAsHome = intent?.hasCategory(Intent.CATEGORY_HOME) == true
         val initialTheme = ThemeMode.fromName(prefs.getString(KEY_THEME_MODE, null))
         val initialBackground = BackgroundSpec.decode(prefs.getString(KEY_BACKGROUND, null))
         val initialVeil = VeilLevel.fromName(prefs.getString(KEY_VEIL, null))
@@ -95,8 +99,7 @@ class MainActivity : ComponentActivity() {
             val palette = Palette.of(themeMode, isSystemInDarkTheme(), customColors, backgroundIsDark)
 
             // Opened as the Home app, Back has nowhere to go; opened from another launcher it closes
-            val isHome = intent?.hasCategory(Intent.CATEGORY_HOME) == true
-            BackHandler(enabled = isHome) { }
+            BackHandler(enabled = openedAsHome) { }
 
             CompositionLocalProvider(LocalPalette provides palette) {
                 LauncherScreen(
@@ -153,6 +156,12 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.refresh()
+    }
+
+    // Opened from the apps list first, OtagHome becomes the Home app once Home brings it back
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) openedAsHome = true
     }
 }
 
