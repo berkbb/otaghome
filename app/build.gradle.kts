@@ -7,7 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersionName = "1.0.2"
+val appVersionName = "1.0.3"
 
 // Release signing: keystore.properties (git-ignored) or OTAGHOME_* environment variables.
 val keystoreProperties = Properties().apply {
@@ -29,7 +29,7 @@ android {
         applicationId = "com.berkbb.otaghome"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
+        versionCode = 4
         versionName = appVersionName
     }
 

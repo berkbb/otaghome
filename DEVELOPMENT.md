@@ -29,7 +29,7 @@ update without uninstalling first.
 
 ```sh
 adb connect <tv-ip>:5555
-adb install -r app/build/outputs/apk/release/otaghome-v1.0.2-universal-release.apk
+adb install -r app/build/outputs/apk/release/otaghome-v1.0.3-universal-release.apk
 adb shell am start -n com.berkbb.otaghome/.MainActivity
 adb exec-out screencap -p > screen.png
 ```
