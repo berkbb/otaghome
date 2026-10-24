@@ -7,6 +7,8 @@
 - The Home override's accessibility service stays off until the user turns it on, never reads
   window content (`canRetrieveWindowContent="false"`) and listens only to the TV's own home
   screen packages.
+- `WRITE_SECURE_SETTINGS` is only ever granted by the user over adb, and is used only to add
+  OtagHome's own service to the enabled accessibility services; other entries stay as they are.
 - Repository hygiene: no absolute local paths, no personal data, no keystores or passwords.
 - Picture backgrounds use a persisted read permission on the chosen document only, released when
   the picture is replaced.
