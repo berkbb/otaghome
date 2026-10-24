@@ -64,7 +64,40 @@ Download `otaghome-v<version>-universal-release.apk` and install it with a file 
 adb install -r otaghome-v1.0.2-universal-release.apk
 ```
 
-To make it the home screen, press Home and choose OtagHome (where the TV offers the choice).
+### Make it the home screen
+
+An app cannot make itself the home screen; how you choose it depends on the TV.
+
+**TVs that ask.** Press Home after installing; if the TV lists the home screens, choose OtagHome,
+then Always. Some TVs offer the same choice under Settings → Apps → Default apps → Home app.
+
+**Google TV and most newer Android TVs** never ask: their own home screen always opens. Either:
+
+- Turn the TV's own home screen off over adb (debugging on in Developer options). Find its package
+  among the home screens:
+
+  ```sh
+  adb shell cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.HOME
+  ```
+
+  Turn it off (here Google TV's; on other TVs it is, for example, `com.google.android.tvlauncher`
+  or `com.google.android.leanbacklauncher`):
+
+  ```sh
+  adb shell pm disable-user --user 0 com.google.android.apps.tv.launcherx
+  ```
+
+  Turn it back on to undo this, and always before uninstalling OtagHome, or the TV is left without
+  a home screen:
+
+  ```sh
+  adb shell pm enable com.google.android.apps.tv.launcherx
+  ```
+
+  Some TVs turn their home screen back on after a system update; run `disable-user` again.
+  Screens that belong to the TV's own home screen may not open while it is off.
+- Or remap the Home button: an app that remaps buttons through Accessibility (a "button mapper")
+  can open OtagHome when Home is pressed. The TV's own home screen stays, and no adb is needed.
 
 ## Build
 
