@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -321,15 +322,19 @@ private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoti
 
 /**
  * The Home override, for TVs that never let another app be the home screen: OtagHome's
- * accessibility service opens it whenever the TV's own home screen comes up. Only the user can
- * switch the service on in Accessibility, so turning it on explains it first and opens that
- * screen; turning it off stops the service at once.
+ * accessibility service opens it whenever the TV's own home screen comes up. Turning it on
+ * explains it first, then switches the service on directly when OtagHome was allowed to over
+ * adb, otherwise opens Accessibility; a TV without a real Accessibility screen gets the adb line
+ * instead. Turning it off stops the service at once.
  */
 @Composable
 private fun HomeOverrideRow() {
     val on by HomeOverrideService.active.collectAsState()
     var explaining by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    val notify = LocalNotice.current
     val accessibilityLabel = stringResource(R.string.settings_accessibility)
+    val failed = stringResource(R.string.msg_home_override_failed)
     val open = rememberOpener()
     val openAccessibility = { open(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), accessibilityLabel) }
     SettingsRow(
@@ -344,25 +349,37 @@ private fun HomeOverrideRow() {
         }
     )
     if (explaining) {
+        val turnOn: (() -> Unit)? = when {
+            context.canSwitchHomeOverride() -> {
+                {
+                    if (!context.turnOnHomeOverride()) notify(Notice(failed, R.drawable.ic_error))
+                }
+            }
+            context.accessibilityScreen() != null -> openAccessibility
+            else -> null
+        }
         HomeOverrideDialog(
-            onOpen = {
-                explaining = false
-                openAccessibility()
-            },
+            direct = context.canSwitchHomeOverride(),
+            grantCommand = context.homeOverrideGrantCommand(),
+            onTurnOn = turnOn?.let { action -> { explaining = false; action() } },
             onDismiss = { explaining = false }
         )
     }
 }
 
-/** What the Home override does and how to turn it on; focus starts on Cancel. */
+/**
+ * What the Home override does and how to turn it on: directly when [direct], through
+ * Accessibility when there is an [onTurnOn] otherwise, or with [grantCommand] over adb when there
+ * is no way on the TV. Focus starts on the button that turns it on, or on Close when there is none.
+ */
 @Composable
-private fun HomeOverrideDialog(onOpen: () -> Unit, onDismiss: () -> Unit) {
+private fun HomeOverrideDialog(direct: Boolean, grantCommand: String, onTurnOn: (() -> Unit)?, onDismiss: () -> Unit) {
     val palette = LocalPalette.current
-    val cancelFocus = remember { FocusRequester() }
+    val firstFocus = remember { FocusRequester() }
     Dialog(onDismissRequest = onDismiss) {
         LaunchedEffect(Unit) {
             delay(50)
-            runCatching { cancelFocus.requestFocus() }
+            runCatching { firstFocus.requestFocus() }
         }
         Column(
             modifier = Modifier
@@ -381,9 +398,35 @@ private fun HomeOverrideDialog(onOpen: () -> Unit, onDismiss: () -> Unit) {
                 Text(text = stringResource(R.string.home_override_title), color = palette.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
             }
             Text(text = stringResource(R.string.home_override_text), color = palette.textSecondary, fontSize = 16.sp, lineHeight = 23.sp)
+            when {
+                direct -> Unit
+                onTurnOn != null -> Text(text = stringResource(R.string.home_override_steps_screen), color = palette.textPrimary, fontSize = 16.sp, lineHeight = 23.sp)
+                else -> {
+                    Text(text = stringResource(R.string.home_override_steps_adb), color = palette.textPrimary, fontSize = 16.sp, lineHeight = 23.sp)
+                    Text(
+                        text = grantCommand,
+                        color = palette.textPrimary,
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.fillMaxWidth().clip(Corners.medium).background(palette.card).padding(12.dp)
+                    )
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
-                PillButton(stringResource(R.string.btn_cancel), primary = false, modifier = Modifier.focusRequester(cancelFocus), onClick = onDismiss)
-                PillButton(stringResource(R.string.home_override_open), primary = true, onClick = onOpen)
+                PillButton(
+                    stringResource(if (onTurnOn != null) R.string.btn_cancel else R.string.btn_close),
+                    primary = false,
+                    modifier = if (onTurnOn == null) Modifier.focusRequester(firstFocus) else Modifier,
+                    onClick = onDismiss
+                )
+                if (onTurnOn != null) {
+                    PillButton(
+                        stringResource(if (direct) R.string.home_override_turn_on else R.string.home_override_open),
+                        primary = true,
+                        modifier = Modifier.focusRequester(firstFocus),
+                        onClick = onTurnOn
+                    )
+                }
             }
         }
     }

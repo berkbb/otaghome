@@ -219,7 +219,11 @@
     <string name="settings_home_override">Butonul Home către OtagHome</string>
     <string name="settings_accessibility">Accesibilitate</string>
     <string name="home_override_title">Butonul Home să deschidă OtagHome?</string>
-    <string name="home_override_text">Pe televizoarele care nu vă lasă să alegeți ecranul principal, OtagHome se poate deschide singur ori de câte ori apare ecranul principal al televizorului. Pentru aceasta este nevoie de serviciul de accesibilitate OtagHome: în ecranul următor, alegeți OtagHome și porniți-l. Serviciul observă doar când se deschide ecranul principal al televizorului; nu citește nimic de pe ecran și nu trimite nimic nicăieri. Ecranul principal al televizorului poate apărea o clipă înainte. Îl puteți opri de aici sau din Accesibilitate.</string>
+    <string name="home_override_text">Pe televizoarele care nu vă lasă să alegeți ecranul principal, OtagHome se poate deschide singur ori de câte ori apare ecranul principal al televizorului. Pentru aceasta este nevoie de serviciul de accesibilitate OtagHome, care observă doar când se deschide ecranul principal al televizorului; nu citește nimic de pe ecran și nu trimite nimic nicăieri. Ecranul principal al televizorului poate apărea o clipă înainte. Îl puteți opri de aici.</string>
     <string name="home_override_open">Deschideți Accesibilitate</string>
+    <string name="home_override_steps_screen">În ecranul următor, alegeți OtagHome și porniți-l.</string>
+    <string name="home_override_steps_adb">Acest televizor nu are un ecran Accesibilitate din care să-l porniți. Permiteți OtagHome o singură dată de pe un computer cu adb, apoi alegeți din nou această opțiune:</string>
+    <string name="home_override_turn_on">Porniți</string>
+    <string name="msg_home_override_failed">Butonul Home nu a putut fi trimis către OtagHome</string>
     <string name="home_override_service_description">Deschide OtagHome ori de câte ori apare ecranul principal al televizorului. Nu citește nimic de pe ecran și nu trimite nimic nicăieri.</string>
 </resources>
