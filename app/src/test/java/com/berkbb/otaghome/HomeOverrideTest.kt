@@ -56,4 +56,21 @@ class HomeOverrideTest {
         assertFalse(HomeOverride.isHomeScreen(googleTv.packageName, null, targets))
         assertFalse(HomeOverride.isHomeScreen(googleTv.packageName, googleTv.activityName, emptyMap()))
     }
+
+    @Test
+    fun googlesStubIsNotAnAccessibilityScreen() {
+        assertFalse(HomeOverride.isRealScreen("com.google.android.tv.frameworkpackagestubs"))
+        assertFalse(HomeOverride.isRealScreen(null))
+        assertTrue(HomeOverride.isRealScreen("com.android.tv.settings"))
+    }
+
+    @Test
+    fun theServiceIsAddedOnceBesideTheOthers() {
+        val service = "$own/$own.HomeOverrideService"
+        assertEquals(service, HomeOverride.withService(null, service))
+        assertEquals(service, HomeOverride.withService("", service))
+        assertEquals("a/.A:$service", HomeOverride.withService("a/.A", service))
+        assertEquals("$own/.HomeOverrideService", HomeOverride.withService("$own/.HomeOverrideService", service))
+        assertEquals("a/.A:$service", HomeOverride.withService("a/.A:$service", service))
+    }
 }

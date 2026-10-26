@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Weather from Open-Meteo, and the place from the internet address when the user allows it -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -7,6 +8,10 @@
     <!-- Network icon in the top bar -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <!-- Turns the Home override on without an Accessibility screen; only ever granted over adb -->
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
     <!-- Opens the system uninstall prompt from an app's menu -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!-- Installs a newer OtagHome over itself from About -->

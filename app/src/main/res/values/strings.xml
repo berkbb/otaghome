@@ -219,7 +219,11 @@
     <string name="settings_home_override">Home button to OtagHome</string>
     <string name="settings_accessibility">Accessibility</string>
     <string name="home_override_title">Send the Home button to OtagHome?</string>
-    <string name="home_override_text">On TVs that do not let you choose the home screen, OtagHome can open itself whenever the TV\'s own home screen comes up. This takes OtagHome\'s accessibility service: on the next screen, choose OtagHome and turn it on. The service only notices when the TV\'s home screen opens; it reads nothing on the screen and sends nothing anywhere. The TV\'s home screen may show for a moment first. You can turn it off here or in Accessibility.</string>
+    <string name="home_override_text">On TVs that do not let you choose the home screen, OtagHome can open itself whenever the TV\'s own home screen comes up. This takes OtagHome\'s accessibility service, which only notices when the TV\'s home screen opens; it reads nothing on the screen and sends nothing anywhere. The TV\'s home screen may show for a moment first. You can turn it off here.</string>
     <string name="home_override_open">Open Accessibility</string>
+    <string name="home_override_steps_screen">On the next screen, choose OtagHome and turn it on.</string>
+    <string name="home_override_steps_adb">This TV has no Accessibility screen to turn it on from. Allow OtagHome once from a computer with adb, then choose this again:</string>
+    <string name="home_override_turn_on">Turn on</string>
+    <string name="msg_home_override_failed">The Home button could not be sent to OtagHome</string>
     <string name="home_override_service_description">Opens OtagHome whenever the TV\'s own home screen comes up. Reads nothing on the screen and sends nothing anywhere.</string>
 </resources>

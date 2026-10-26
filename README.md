@@ -65,7 +65,7 @@ notices when the TV's own home screen opens; it reads nothing on the screen and 
 Download `otaghome-v<version>-universal-release.apk` and install it with a file manager, or:
 
 ```sh
-adb install -r otaghome-v1.0.2-universal-release.apk
+adb install -r otaghome-v1.0.3-universal-release.apk
 ```
 
 ### Make it the home screen
@@ -81,7 +81,12 @@ then Always. Some TVs offer the same choice under Settings → Apps → Default 
   service and opens Accessibility, where you turn OtagHome on. From then on OtagHome opens
   whenever the TV's own home screen comes up, which may show for a moment first. The same row
   turns it off. If a newer TV will not let you turn it on, allow restricted settings in
-  OtagHome's App info first.
+  OtagHome's App info first. Some TVs (Philips) have no Accessibility screen at all; there,
+  allow OtagHome once over adb and the same row turns the service on and off by itself:
+
+  ```sh
+  adb shell pm grant com.berkbb.otaghome android.permission.WRITE_SECURE_SETTINGS
+  ```
 - Or turn the TV's own home screen off over adb (debugging on in Developer options). Find its package
   among the home screens:
 

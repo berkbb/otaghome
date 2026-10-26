@@ -219,7 +219,11 @@
     <string name="settings_home_override">Home tuşunu OtagHome\'a yönlendir</string>
     <string name="settings_accessibility">Erişilebilirlik</string>
     <string name="home_override_title">Home tuşu OtagHome\'a yönlendirilsin mi?</string>
-    <string name="home_override_text">Ana ekranı seçtirmeyen TV\'lerde, TV\'nin kendi ana ekranı her açıldığında OtagHome kendini açabilir. Bunun için OtagHome\'un erişilebilirlik hizmeti gerekir: sonraki ekranda OtagHome\'u seçip açın. Hizmet yalnızca TV\'nin ana ekranının açıldığını fark eder; ekrandaki hiçbir şeyi okumaz, hiçbir yere bir şey göndermez. TV\'nin ana ekranı önce bir an görünebilir. Buradan ya da Erişilebilirlik\'ten kapatabilirsiniz.</string>
+    <string name="home_override_text">Ana ekranı seçtirmeyen TV\'lerde, TV\'nin kendi ana ekranı her açıldığında OtagHome kendini açabilir. Bunun için OtagHome\'un erişilebilirlik hizmeti gerekir; hizmet yalnızca TV\'nin ana ekranının açıldığını fark eder, ekrandaki hiçbir şeyi okumaz, hiçbir yere bir şey göndermez. TV\'nin ana ekranı önce bir an görünebilir. Buradan kapatabilirsiniz.</string>
     <string name="home_override_open">Erişilebilirlik\'i aç</string>
+    <string name="home_override_steps_screen">Sonraki ekranda OtagHome\'u seçip açın.</string>
+    <string name="home_override_steps_adb">Bu TV\'de hizmeti açacak bir Erişilebilirlik ekranı yok. adb kurulu bir bilgisayardan OtagHome\'a bir kez izin verin, sonra bunu yeniden seçin:</string>
+    <string name="home_override_turn_on">Aç</string>
+    <string name="msg_home_override_failed">Home tuşu OtagHome\'a yönlendirilemedi</string>
     <string name="home_override_service_description">TV\'nin kendi ana ekranı her açıldığında OtagHome\'u açar. Ekrandaki hiçbir şeyi okumaz, hiçbir yere bir şey göndermez.</string>
 </resources>

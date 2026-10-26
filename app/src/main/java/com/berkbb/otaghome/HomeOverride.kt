@@ -1,9 +1,13 @@
 package com.berkbb.otaghome
 
+import android.Manifest
 import android.accessibilityservice.AccessibilityService
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +47,52 @@ object HomeOverride {
         if (packageName == null || className == null) return false
         return targets[packageName.toString()]?.contains(className.toString()) == true
     }
+
+    /** Apps that stand in for settings screens a TV left out and only say no app can open them. */
+    private val STUB_PACKAGES = setOf("com.google.android.tv.frameworkpackagestubs")
+
+    /** True when the screen that answers the Accessibility intent is a real one, not a stub. */
+    fun isRealScreen(packageName: String?): Boolean = packageName != null && packageName !in STUB_PACKAGES
+
+    /** The enabled-services setting (colon separated) with [service] in it once. */
+    fun withService(enabled: String?, service: String): String {
+        val services = enabled.orEmpty().split(':').filter { it.isNotBlank() }
+        val present = services.any { sameService(it, service) }
+        return (if (present) services else services + service).joinToString(":")
+    }
+
+    /** Android may keep a service as "package/.Class"; both spellings name the same one. */
+    private fun sameService(a: String, b: String): Boolean = fullName(a).equals(fullName(b), ignoreCase = true)
+
+    private fun fullName(service: String): String {
+        val pkg = service.substringBefore('/')
+        val cls = service.substringAfter('/')
+        return if (cls.startsWith('.')) "$pkg/$pkg$cls" else service
+    }
 }
+
+/** The adb line that lets OtagHome switch its service itself, on TVs without an Accessibility screen. */
+internal fun Context.homeOverrideGrantCommand(): String =
+    "adb shell pm grant $packageName ${Manifest.permission.WRITE_SECURE_SETTINGS}"
+
+/** Accessibility in the TV's settings, or null when the TV has none (only a stub that says so). */
+internal fun Context.accessibilityScreen(): Intent? {
+    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+    val handler = runCatching { packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName }.getOrNull()
+    return intent.takeIf { HomeOverride.isRealScreen(handler) }
+}
+
+/** True once OtagHome was allowed, over adb, to switch its accessibility service itself. */
+internal fun Context.canSwitchHomeOverride(): Boolean =
+    checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
+
+/** Turns the service on as Accessibility would; false when OtagHome may not. */
+internal fun Context.turnOnHomeOverride(): Boolean = canSwitchHomeOverride() && runCatching {
+    val service = ComponentName(this, HomeOverrideService::class.java).flattenToString()
+    val enabled = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+    Settings.Secure.putString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, HomeOverride.withService(enabled, service))
+    Settings.Secure.putInt(contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, 1)
+}.isSuccess
 
 /** Every Home app this TV offers. */
 internal fun Context.homeCandidates(): List<HomeCandidate> =
