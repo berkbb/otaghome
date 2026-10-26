@@ -29,7 +29,8 @@ outside Compose and gets a unit test. See `rules/testing_rules.md`.
 ### 4. Privacy
 - The internet address is sent to an IP-location service only after the user allows it.
 - No absolute local paths, personal data or secrets in the repository; keystores stay in the
-  git-ignored `keystore.properties` or `OTAGHOME_*` environment variables.
+  git-ignored `keystore.properties`, `OTAGHOME_*` environment variables, or the TV apps' shared
+  keystore `~/.signing/babadogan-tv-release.p12` with its password in the macOS Keychain.
 See `rules/privacy_rules.md`.
 
 ### 5. The user's TV

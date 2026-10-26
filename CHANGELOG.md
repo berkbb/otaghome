@@ -19,6 +19,9 @@ All notable changes to OtagHome are listed here. The format follows
   OtagHome whenever the TV's own home screen comes up; it notices only that screen opening and
   reads nothing on the screen. A dialog explains it before Accessibility opens.
 
+### Security
+- **Release signing off the debug keystore:** without a configured keystore, releases fell back to `~/.android/debug.keystore`, whose password is public. Releases now use the TV apps' shared keystore `~/.signing/babadogan-tv-release.p12` (same certificate, so installed TVs keep updating) with a strong password kept in the macOS Keychain, or `keystore.properties` / `OTAGHOME_*` variables; the debug key is only a fallback with a warning.
+
 ## [1.0.2] - 2026-10-23
 
 ### Changed

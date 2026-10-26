@@ -20,10 +20,16 @@ beyond AndroidX, vector artwork only, and network use limited to the weather. Re
 
 The update check reads `https://api.github.com/repos/berkbb/otaghome/releases/latest` and installs
 the first `*-release.apk` asset; publish `dist/otaghome-v<version>-universal-release.apk` there with a `v<version>`
-tag. Only the release variant exists. Without `keystore.properties` or `OTAGHOME_KEYSTORE_FILE` the
-release is signed with the machine's debug key; `release-cert.sha256` records the expected
-certificate and `package.sh` warns on a mismatch. A different key means installed TVs cannot
-update without uninstalling first.
+tag. Only the release variant exists. The release is signed with the first of: a git-ignored
+`keystore.properties` (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`), the
+`OTAGHOME_KEYSTORE_FILE` / `_PASSWORD` / `OTAGHOME_KEY_ALIAS` / `_PASSWORD` environment variables,
+or the keystore shared by the TV apps, `~/.signing/babadogan-tv-release.p12` (alias
+`babadogan-tv`), whose password Gradle reads from the macOS Keychain item
+`babadogan-tv-release-keystore`; without any of them, the machine's debug key with a warning. On
+another Mac, copy the keystore to the same place and add the password with
+`security add-generic-password -a "$USER" -s babadogan-tv-release-keystore -T /usr/bin/security -w`.
+`release-cert.sha256` records the expected certificate and `package.sh` warns on a mismatch. A
+different key means installed TVs cannot update without uninstalling first.
 
 ## Try it on a TV
 

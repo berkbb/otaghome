@@ -9,13 +9,24 @@ plugins {
 
 val appVersionName = "1.0.2"
 
-// Release signing: keystore.properties (git-ignored) or OTAGHOME_* environment variables.
+// Release signing, first match wins: keystore.properties (git-ignored), OTAGHOME_* environment
+// variables, or the TV apps' shared keystore ~/.signing/babadogan-tv-release.p12, whose password
+// is the macOS Keychain item "babadogan-tv-release-keystore".
 val keystoreProperties = Properties().apply {
     val file = rootProject.file("keystore.properties")
     if (file.exists()) file.inputStream().use { load(it) }
 }
 fun signingValue(key: String, env: String): String? = keystoreProperties.getProperty(key) ?: System.getenv(env)
-val releaseStoreFile = signingValue("storeFile", "OTAGHOME_KEYSTORE_FILE")
+val sharedKeystore = File(System.getProperty("user.home"), ".signing/babadogan-tv-release.p12")
+val releaseStoreFile = signingValue("storeFile", "OTAGHOME_KEYSTORE_FILE") ?: sharedKeystore.takeIf { it.isFile }?.path
+// macOS only; elsewhere the password comes from keystore.properties or the environment.
+fun keychainPassword(): String? = runCatching {
+    providers.exec {
+        commandLine("security", "find-generic-password", "-s", "babadogan-tv-release-keystore", "-w")
+        isIgnoreExitValue = true
+    }.standardOutput.asText.get().trim()
+}.getOrNull()?.ifEmpty { null }
+val releaseStorePassword = releaseStoreFile?.let { signingValue("storePassword", "OTAGHOME_KEYSTORE_PASSWORD") ?: keychainPassword() }
 
 android {
     namespace = "com.berkbb.otaghome"
@@ -37,9 +48,9 @@ android {
         create("release") {
             if (releaseStoreFile != null) {
                 storeFile = rootProject.file(releaseStoreFile)
-                storePassword = signingValue("storePassword", "OTAGHOME_KEYSTORE_PASSWORD")
-                keyAlias = signingValue("keyAlias", "OTAGHOME_KEY_ALIAS")
-                keyPassword = signingValue("keyPassword", "OTAGHOME_KEY_PASSWORD")
+                storePassword = releaseStorePassword
+                keyAlias = signingValue("keyAlias", "OTAGHOME_KEY_ALIAS") ?: "babadogan-tv"
+                keyPassword = signingValue("keyPassword", "OTAGHOME_KEY_PASSWORD") ?: releaseStorePassword
             }
         }
     }
@@ -57,8 +68,8 @@ android {
             signingConfig = if (releaseStoreFile != null) {
                 signingConfigs.getByName("release")
             } else {
-                // Same fallback as the other TV apps: this Mac's debug key (see release-cert.sha256)
-                logger.warn("OtagHome: no release keystore configured (keystore.properties / OTAGHOME_KEYSTORE_FILE); signing release with the debug key.")
+                // Same fallback as the other TV apps; debug-signed APKs cannot update installed TVs
+                logger.warn("OtagHome: no release keystore (keystore.properties, OTAGHOME_KEYSTORE_FILE or ~/.signing/babadogan-tv-release.p12); signing release with the debug key.")
                 signingConfigs.getByName("debug")
             }
         }
