@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
@@ -19,9 +20,15 @@ import java.security.MessageDigest
 const val SELF_REPO = "berkbb/otaghome"
 const val SELF_RELEASES_PAGE = "github.com/$SELF_REPO/releases"
 private const val SELF_RELEASE_API_URL = "https://api.github.com/repos/$SELF_REPO/releases/latest"
+/** Only an asset address under this prefix is used as the fallback download (the release's `url` field). */
+private const val SELF_ASSET_API_PREFIX = "https://api.github.com/repos/$SELF_REPO/releases/assets/"
 
-/** The release APK to install: its tag, address, size and GitHub's SHA-256 digest when given. */
-data class ReleaseApk(val tag: String, val url: String, val size: Long, val sha256: String?)
+/**
+ * The release APK to install: its tag, address, size and GitHub's SHA-256 digest when given.
+ * [apiUrl] is the same asset on api.github.com, tried when the github.com download fails (a regional
+ * GitHub outage on 2026-11-08 answered 504 for every release download while the API kept working).
+ */
+data class ReleaseApk(val tag: String, val url: String, val size: Long, val sha256: String?, val apiUrl: String? = null)
 
 /** Result of checking OtagHome's GitHub releases. */
 sealed interface UpdateStatus {
@@ -67,6 +74,10 @@ object ReleaseParser {
         return if (value.startsWith("sha256:") && hex.length == 64 && hex.all { it in "0123456789abcdef" }) hex else null
     }
 
+    /** The asset's API address, kept only when it belongs to OtagHome's own repository on api.github.com. */
+    fun parseApiUrl(url: String?): String? =
+        url?.trim()?.takeIf { it.startsWith(SELF_ASSET_API_PREFIX) && it.length > SELF_ASSET_API_PREFIX.length }
+
     /** The latest-release reply compared with the installed [current] version. */
     fun status(json: String, current: String): UpdateStatus {
         val release = JSONObject(json)
@@ -77,7 +88,7 @@ object ReleaseParser {
         val assets = release.optJSONArray("assets")
         val apk = (0 until (assets?.length() ?: 0)).map { assets!!.getJSONObject(it) }
             .firstOrNull { it.optString("name").endsWith("-release.apk") && it.optString("browser_download_url").isNotBlank() }
-            ?.let { ReleaseApk(tag, it.getString("browser_download_url"), it.optLong("size"), parseSha256(it.optString("digest"))) }
+            ?.let { ReleaseApk(tag, it.getString("browser_download_url"), it.optLong("size"), parseSha256(it.optString("digest")), parseApiUrl(it.optString("url"))) }
         return UpdateStatus.Available(latest.joinToString("."), current, apk)
     }
 }
@@ -103,37 +114,74 @@ object SelfUpdate {
         }
     }.getOrDefault(UpdateStatus.Failed)
 
-    /** Downloads into a .part file and keeps it only when it matches the digest (or the size). */
-    fun download(apk: ReleaseApk, target: File, onProgress: (Int) -> Unit): Boolean {
+    /**
+     * Downloads into a .part file and keeps it only when it matches the digest (or the size).
+     * When the github.com address fails with an I/O error or a 5xx answer and the release gave the
+     * asset's api.github.com address, the same file is fetched once more from there; the digest or
+     * size check runs on whichever download succeeded. [open] exists so tests can stand in for the network.
+     */
+    fun download(
+        apk: ReleaseApk,
+        target: File,
+        open: (URL) -> HttpURLConnection = { it.openConnection() as HttpURLConnection },
+        onProgress: (Int) -> Unit,
+    ): Boolean {
         val part = File(target.parentFile, target.name + ".part")
         return runCatching {
-            val connection = (URL(apk.url).openConnection() as HttpURLConnection).apply {
-                instanceFollowRedirects = true
-                connectTimeout = 15_000
-                readTimeout = 30_000
-            }
-            try {
-                if (connection.responseCode != HttpURLConnection.HTTP_OK) return false
-                val total = connection.contentLengthLong.takeIf { it > 0 } ?: apk.size
-                var done = 0L
-                connection.inputStream.use { input ->
-                    FileOutputStream(part).use { output ->
-                        val buffer = ByteArray(64 * 1024)
-                        while (true) {
-                            val read = input.read(buffer)
-                            if (read == -1) break
-                            output.write(buffer, 0, read)
-                            done += read
-                            if (total > 0) onProgress(((done * 100) / total).toInt().coerceIn(0, 100))
-                        }
-                    }
-                }
-            } finally {
-                connection.disconnect()
-            }
+            val first = runCatching { fetch(apk.url, null, apk.size, part, onProgress, open) }
+            val fetched = first.getOrNull() == HttpURLConnection.HTTP_OK ||
+                (apk.apiUrl != null && first.isRetryable() &&
+                    fetch(apk.apiUrl, "application/octet-stream", apk.size, part, onProgress, open) == HttpURLConnection.HTTP_OK)
+            if (!fetched) return@runCatching part.delete().let { false }
             val valid = apk.sha256?.let { sha256Of(part) == it } ?: (apk.size > 0 && part.length() == apk.size)
             if (valid) part.renameTo(target) else part.delete().let { false }
         }.getOrElse { part.delete(); false }
+    }
+
+    /** A broken connection or a server-side error (500 and above) is worth a second address; 404 is not. */
+    private fun Result<Int>.isRetryable(): Boolean =
+        exceptionOrNull() is IOException || (getOrNull() ?: 0) >= HttpURLConnection.HTTP_INTERNAL_ERROR
+
+    /** Fetches [url] into [part] (truncated first) and returns the HTTP status; the body is read only on 200. */
+    private fun fetch(
+        url: String,
+        accept: String?,
+        expectedSize: Long,
+        part: File,
+        onProgress: (Int) -> Unit,
+        open: (URL) -> HttpURLConnection,
+    ): Int {
+        val connection = open(URL(url)).apply {
+            instanceFollowRedirects = true
+            connectTimeout = 15_000
+            readTimeout = 30_000
+            if (accept != null) {
+                // The API wants the same identification the update check sends
+                setRequestProperty("Accept", accept)
+                setRequestProperty("User-Agent", "OtagHome/${BuildConfig.VERSION_NAME}")
+            }
+        }
+        try {
+            val code = connection.responseCode
+            if (code != HttpURLConnection.HTTP_OK) return code
+            val total = connection.contentLengthLong.takeIf { it > 0 } ?: expectedSize
+            var done = 0L
+            connection.inputStream.use { input ->
+                FileOutputStream(part).use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    while (true) {
+                        val read = input.read(buffer)
+                        if (read == -1) break
+                        output.write(buffer, 0, read)
+                        done += read
+                        if (total > 0) onProgress(((done * 100) / total).toInt().coerceIn(0, 100))
+                    }
+                }
+            }
+            return code
+        } finally {
+            connection.disconnect()
+        }
     }
 
     fun sha256Of(file: File): String {

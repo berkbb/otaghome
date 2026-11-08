@@ -48,6 +48,29 @@ class ReleaseParserTest {
     }
 
     @Test
+    fun theApiAssetAddressIsKeptNextToTheDownloadAddress() {
+        val api = "https://api.github.com/repos/berkbb/otaghome/releases/assets/4242"
+        val json = release("v1.0.4", """[{"name":"otaghome-v1.0.4-universal-release.apk","url":"$api","browser_download_url":"https://x/u.apk","size":1500000,"digest":"sha256:$sha"}]""")
+        assertEquals(
+            UpdateStatus.Available("1.0.4", "1.0.3", ReleaseApk("v1.0.4", "https://x/u.apk", 1_500_000, sha, api)),
+            ReleaseParser.status(json, "1.0.3")
+        )
+    }
+
+    @Test
+    fun onlyAnAssetAddressOfOtagHomeOnApiGithubIsKept() {
+        assertEquals("https://api.github.com/repos/berkbb/otaghome/releases/assets/1", ReleaseParser.parseApiUrl("https://api.github.com/repos/berkbb/otaghome/releases/assets/1"))
+        assertNull(ReleaseParser.parseApiUrl("https://api.github.com/repos/someone/otaghome/releases/assets/1"))
+        assertNull(ReleaseParser.parseApiUrl("http://api.github.com/repos/berkbb/otaghome/releases/assets/1"))
+        assertNull(ReleaseParser.parseApiUrl("https://api.example.com/repos/berkbb/otaghome/releases/assets/1"))
+        assertNull(ReleaseParser.parseApiUrl("https://api.github.com/repos/berkbb/otaghome/releases/assets/"))
+        assertNull(ReleaseParser.parseApiUrl(""))
+        assertNull(ReleaseParser.parseApiUrl(null))
+        val json = release("v1.0.4", """[{"name":"a-release.apk","url":"https://api.github.com/repos/someone/else/releases/assets/1","browser_download_url":"https://x/u.apk","size":1}]""")
+        assertNull((ReleaseParser.status(json, "1.0.3") as UpdateStatus.Available).apk?.apiUrl)
+    }
+
+    @Test
     fun theSameOrAnOlderReleaseIsUpToDate() {
         assertEquals(UpdateStatus.UpToDate("0.1.0"), ReleaseParser.status(release("v0.1.0"), "0.1.0"))
         assertEquals(UpdateStatus.UpToDate("0.2.0"), ReleaseParser.status(release("v0.1.9"), "0.2.0"))
