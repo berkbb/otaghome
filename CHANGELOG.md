@@ -6,6 +6,13 @@ All notable changes to OtagHome are listed here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+- **Update download during a GitHub regional outage:** on 2026-11-08 one GitHub region answered 504 for every
+  `github.com/…/releases/download/…` address for hours while `api.github.com` kept working, so the in-app update
+  could not download the APK. When the github.com download fails with an I/O error or a 5xx answer, OtagHome now
+  fetches the same asset once more from its `api.github.com/repos/berkbb/otaghome/releases/assets/<id>` address
+  (`Accept: application/octet-stream`); the SHA-256 (or size) check runs on whichever download succeeded.
+
 ### Security
 - **Release signing off the debug keystore:** without a configured keystore, releases fell back to `~/.android/debug.keystore`, whose password is public. Releases now use the TV apps' shared keystore `~/.signing/babadogan-tv-release.p12` (same certificate, so installed TVs keep updating) with a strong password kept in the macOS Keychain, or `keystore.properties` / `OTAGHOME_*` variables; the debug key is only a fallback with a warning.
 

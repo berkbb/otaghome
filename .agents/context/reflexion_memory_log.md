@@ -17,3 +17,9 @@
   animator duration scale at 0 (animations off) it ended at once and a 10-second message closed
   instantly. Anything that measures time uses the clock (`SystemClock.uptimeMillis` + `delay`);
   animations are only for looks.
+- **One address is not enough**: the update downloaded only from `github.com/…/releases/download/…`;
+  on 2026-11-08 one GitHub region answered 504 there for hours while `api.github.com` worked. The
+  release JSON already names the asset on the API (`url` field); `download` now retries once from
+  there after an I/O error or a 5xx (never after 404), accepts only addresses under
+  `api.github.com/repos/berkbb/otaghome/releases/assets/`, and verifies the digest as before. The
+  network is injected (`open`) so the fallback has a JVM test.
