@@ -74,6 +74,7 @@ data class Palette(
     /** Fill of a focused button; its text uses [onFocus]. */
     val focus: Color,
     val onFocus: Color,
+    val error: Color,
     val isDark: Boolean
 ) {
     /** The same theme with another accent; the focused card's tint follows it. */
@@ -108,6 +109,7 @@ data class Palette(
             accent = Color(0xFF7C4DFF),
             focus = Color(0xFFE0E0E0),
             onFocus = Color(0xFF111318),
+            error = Color(0xFFFF8A80),
             isDark = true
         )
         val Light = Palette(
@@ -119,6 +121,7 @@ data class Palette(
             accent = Color(0xFF6A3DF0),
             focus = Color(0xFF111318),
             onFocus = Color(0xFFFFFFFF),
+            error = Color(0xFFC62828),
             isDark = false
         )
 

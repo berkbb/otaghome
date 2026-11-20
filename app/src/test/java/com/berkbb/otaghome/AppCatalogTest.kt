@@ -80,7 +80,32 @@ class AppCatalogTest {
         assertEquals(listOf("Beta", "Çay", "Zeta"), AppCatalog.sorted(apps, SortMode.NAME_ASC, collator) { own }.map { it.label })
         assertEquals(listOf("Zeta", "Çay", "Beta"), AppCatalog.sorted(apps, SortMode.NAME_DESC, collator) { own }.map { it.label })
         assertEquals(SortMode.CUSTOM, SortMode.fromName("SIDEWAYS"))
-        assertEquals(SortMode.CUSTOM, SortMode.NAME_DESC.next())
+        assertEquals(SortMode.RECENT, SortMode.NAME_DESC.next())
+        assertEquals(SortMode.CUSTOM, SortMode.RECENT.next())
+    }
+
+    @Test
+    fun recentSortOrdersByMostRecentLaunchThenAlphabet() {
+        val apps = listOf(tv("com.z", "Zeta"), tv("com.b", "Beta"), tv("com.c", "Çay"), tv("com.a", "Alfa"))
+        val launched = AppCatalog.recordLaunch(
+            AppCatalog.recordLaunch(emptyMap(), "com.b", 1_000L),
+            "com.z",
+            2_000L
+        )
+        assertEquals(
+            listOf("Zeta", "Beta", "Alfa", "Çay"),
+            AppCatalog.sorted(apps, SortMode.RECENT, collator, launched) { apps }.map { it.label }
+        )
+        assertEquals(launched, AppCatalog.decodeTimestamps(AppCatalog.encodeTimestamps(launched) + "\nbad_line\ncom.x=-5\n"))
+    }
+
+    @Test
+    fun customLabelsRoundTripAndOverrideDisplayNames() {
+        val apps = listOf(tv("com.a", "Original A"), tv("com.b", "Original B"))
+        val encoded = AppCatalog.encodeCustomLabels(mapOf("com.a" to "  My\tTV\nApp  ", "com.empty" to "   "))
+        val decoded = AppCatalog.decodeCustomLabels(encoded + "\ninvalid\ncom.blank\t   ")
+        assertEquals(mapOf("com.a" to "My TV App"), decoded)
+        assertEquals(listOf("My TV App", "Original B"), AppCatalog.applyCustomLabels(apps, decoded).map { it.label })
     }
 
     @Test
@@ -106,5 +131,52 @@ class AppCatalogTest {
         assertEquals(favorites, AppCatalog.decodePackages(AppCatalog.encodePackages(favorites)))
         assertEquals(listOf("com.a"), AppCatalog.decodePackages("com.a\n\n com.a \n"))
         assertTrue(AppCatalog.decodePackages(null).isEmpty())
+    }
+
+    @Test
+    fun customCategoriesManageLifecycleRoundTripAndOrdering() {
+        var cats = AppCatalog.addCategory(emptyList(), " Video ", "c1")
+        assertEquals(1, cats.size)
+        // Duplicate names (case-insensitive) and blank names are rejected
+        assertEquals(1, AppCatalog.addCategory(cats, "video", "c2").size)
+        assertEquals(1, AppCatalog.addCategory(cats, "   ", "c2").size)
+
+        cats = AppCatalog.addCategory(cats, "Müzik & TV", "c2")
+        assertEquals(2, cats.size)
+
+        cats = AppCatalog.toggleAppInCategory(cats, "c1", "com.yt")
+        cats = AppCatalog.toggleAppInCategory(cats, "c1", "com.nf")
+        val (moved, newIdx) = AppCatalog.moveInCategory(cats, "c1", "com.nf", -1, listOf("com.yt", "com.nf"))
+        assertEquals(0, newIdx)
+        assertEquals(listOf("com.nf", "com.yt"), moved.first().packages)
+
+        val renamed = AppCatalog.renameCategory(moved, "c1", "Streaming")
+        assertEquals("Streaming", renamed.first().name)
+        // Rejects rename colliding with another category
+        assertEquals("Streaming", AppCatalog.renameCategory(renamed, "c1", "müzik & tv").first().name)
+
+        val decoded = AppCatalog.decodeCategories(AppCatalog.encodeCategories(renamed))
+        assertEquals(renamed, decoded)
+
+        val installed = listOf(AppEntry("com.yt", "Main", "YouTube", true), AppEntry("com.nf", "Main", "Netflix", true))
+        assertEquals(listOf("Netflix", "YouTube"), AppCatalog.categoryApps(installed, decoded.first()).map { it.label })
+
+        val deleted = AppCatalog.deleteCategory(decoded, "c1")
+        assertEquals(listOf("c2"), deleted.map { it.id })
+    }
+
+    @Test
+    fun customCategoriesRespectMaximumCount() {
+        var cats = emptyList<AppCategory>()
+        repeat(AppCatalog.MAX_CATEGORIES + 3) { idx ->
+            cats = AppCatalog.addCategory(cats, "Cat $idx", "id_$idx")
+        }
+        assertEquals(AppCatalog.MAX_CATEGORIES, cats.size)
+    }
+
+    @Test
+    fun customArtRoundTripsSafely() {
+        val art = mapOf("com.a" to "file:///data/cover%20a.img", "com.b" to "file:///data/cover_b.img")
+        assertEquals(art, AppCatalog.decodeCustomArt(AppCatalog.encodeCustomArt(art)))
     }
 }

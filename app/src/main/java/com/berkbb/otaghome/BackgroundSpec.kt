@@ -49,6 +49,34 @@ enum class VeilLevel(@param:StringRes val labelRes: Int, val strength: Float) {
     }
 }
 
+/** How often a ready-made picture cycles automatically to the next one. */
+enum class PresetRotation(@param:StringRes val labelRes: Int) {
+    OFF(R.string.rotation_off),
+    DAILY(R.string.rotation_daily),
+    ON_LAUNCH(R.string.rotation_on_launch);
+
+    fun next(): PresetRotation = entries[(ordinal + 1) % entries.size]
+
+    companion object {
+        fun fromName(name: String?): PresetRotation = entries.firstOrNull { it.name == name } ?: OFF
+    }
+}
+
+/** Pure rotation helpers for ready-made pictures. */
+object PresetRotator {
+    private const val DAY_MILLIS = 86_400_000L
+
+    fun next(current: PresetImage, pool: List<PresetImage> = PresetImage.entries): PresetImage {
+        if (pool.isEmpty()) return current
+        val index = pool.indexOf(current)
+        return if (index < 0) pool.first() else pool[(index + 1) % pool.size]
+    }
+
+    fun shouldRotateDaily(lastDay: Long, today: Long): Boolean = lastDay >= 0L && today != lastDay
+
+    fun localEpochDay(nowMillis: Long, offsetMillis: Int): Long = Math.floorDiv(nowMillis + offsetMillis, DAY_MILLIS)
+}
+
 /** Sections of the ready-made pictures page. */
 enum class PresetGroup(@param:StringRes val labelRes: Int) {
     ABSTRACT(R.string.bg_presets_otag),

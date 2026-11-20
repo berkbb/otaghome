@@ -1,15 +1,18 @@
 package com.berkbb.otaghome
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -33,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 /**
  * Asked once before the internet address is used to find the place: allow it, pick a city
@@ -163,7 +168,7 @@ internal fun WeatherPage(
         searching -> Box(modifier = Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = palette.accent, strokeWidth = 2.5.dp)
         }
-        failed -> Text(text = stringResource(R.string.weather_search_failed), color = Color(0xFFFF8A80), fontSize = 14.sp)
+        failed -> Text(text = stringResource(R.string.weather_search_failed), color = palette.error, fontSize = 14.sp)
         results?.isEmpty() == true -> Text(text = stringResource(R.string.weather_no_results), color = palette.textSecondary, fontSize = 14.sp)
         else -> results.orEmpty().forEach { place ->
             SettingsRow(
@@ -240,5 +245,124 @@ internal fun PillButton(text: String, primary: Boolean, modifier: Modifier = Mod
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+/**
+ * Compact 5-day forecast dialog opened from the top-left Clock / Weather card. Uses weather icons
+ * only (no condition words) so it reads identically across all languages.
+ */
+@Composable
+internal fun WeatherForecastDialog(
+    weather: WeatherNow,
+    unit: TempUnit,
+    onRefresh: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val palette = LocalPalette.current
+    val locale = LocalConfiguration.current.locales[0]
+    val closeFocus = remember { FocusRequester() }
+    val dayParser = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).apply { isLenient = false } }
+    val dayFormatter = remember(locale) {
+        SimpleDateFormat(DateFormat.getBestDateTimePattern(locale, "EEEMMMd"), locale)
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        LaunchedEffect(Unit) {
+            delay(50)
+            runCatching { closeFocus.requestFocus() }
+        }
+        Column(
+            modifier = Modifier
+                .width(560.dp)
+                .shadow(16.dp, Corners.extraLarge)
+                .clip(Corners.extraLarge)
+                .background(palette.background)
+                .verticalScroll(rememberScrollState())
+                .padding(28.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier.size(48.dp).background(palette.accent.copy(alpha = 0.16f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(weather.kind.icon(weather.isDay)),
+                        contentDescription = null,
+                        tint = palette.accent,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = weather.place, color = palette.textPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.weather_forecast_title), color = palette.textSecondary, fontSize = 14.sp)
+                }
+                Text(
+                    text = weather.temperatureText(unit),
+                    color = palette.textPrimary,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            if (weather.daily.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    weather.daily.take(5).forEach { day ->
+                        val dateLabel = remember(day.dateIso, locale) {
+                            runCatching { dayParser.parse(day.dateIso)?.let(dayFormatter::format) }.getOrNull() ?: day.dateIso
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(Corners.medium)
+                                .background(palette.card)
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = dateLabel,
+                                color = palette.textPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                painter = painterResource(day.kind.icon(isDay = true)),
+                                contentDescription = null,
+                                tint = palette.accent,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(20.dp))
+                            Text(
+                                text = "${day.minText(unit)} / ${day.maxText(unit)}",
+                                color = palette.textPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.End), modifier = Modifier.fillMaxWidth()) {
+                PillButton(stringResource(R.string.btn_refresh), primary = false) {
+                    onRefresh()
+                    onDismiss()
+                }
+                PillButton(stringResource(R.string.settings_weather), primary = false) {
+                    onDismiss()
+                    onOpenSettings()
+                }
+                PillButton(
+                    stringResource(R.string.btn_close),
+                    primary = true,
+                    modifier = Modifier.focusRequester(closeFocus),
+                    onClick = onDismiss
+                )
+            }
+        }
     }
 }

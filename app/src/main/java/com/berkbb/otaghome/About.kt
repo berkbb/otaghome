@@ -1,6 +1,8 @@
 package com.berkbb.otaghome
 
 import android.os.Build
+import android.os.Environment
+import android.os.StatFs
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +26,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,6 +39,30 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.launch
+import java.util.Locale
+import kotlin.math.roundToInt
+
+/** Available and total internal data storage on the TV (no permissions required). */
+data class StorageSummary(val freeBytes: Long, val totalBytes: Long)
+
+object StorageFormat {
+    fun formatBytes(bytes: Long, locale: Locale = Locale.ROOT): String {
+        val safe = bytes.coerceAtLeast(0L)
+        return if (safe < 1_000_000_000L) "${safe / 1_000_000L} MB"
+        else String.format(locale, "%.1f GB", safe / 1_000_000_000.0)
+    }
+
+    fun usedPercent(freeBytes: Long, totalBytes: Long): Int {
+        if (totalBytes <= 0L) return 0
+        val used = (totalBytes - freeBytes).coerceIn(0L, totalBytes)
+        return ((used * 100.0) / totalBytes).roundToInt().coerceIn(0, 100)
+    }
+}
+
+private fun readDeviceStorage(): StorageSummary? = runCatching {
+    val stat = StatFs(Environment.getDataDirectory().path)
+    StorageSummary(freeBytes = stat.availableBytes, totalBytes = stat.totalBytes)
+}.getOrNull()
 
 /**
  * Full-screen About window, as in Pitwall and AynaCast: the logo and title with a close button,
@@ -61,9 +88,11 @@ internal fun AboutWindow(viewModel: LauncherViewModel, noticeSeconds: Int, onClo
     }
     val installFailure = (install as? UpdateInstall.Failed)?.let { Notice(stringResource(it.messageRes), R.drawable.ic_error) }
     LaunchedEffect(install) { if (installFailure != null) notice = installFailure to System.nanoTime() }
+    val storage = remember { readDeviceStorage() }
+    val locale = LocalConfiguration.current.locales[0]
     val device = stringResource(
         R.string.about_device_value,
-        Build.MANUFACTURER.replaceFirstChar { it.uppercase() }, Build.MODEL, Build.PRODUCT, Build.SUPPORTED_ABIS.firstOrNull().orEmpty()
+        Build.MANUFACTURER.replaceFirstChar { it.uppercase(Locale.ROOT) }, Build.MODEL, Build.PRODUCT, Build.SUPPORTED_ABIS.firstOrNull().orEmpty()
     )
 
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
@@ -105,7 +134,26 @@ internal fun AboutWindow(viewModel: LauncherViewModel, noticeSeconds: Int, onClo
                     InfoCard(stringResource(R.string.about_device), device, Modifier.weight(1f))
                     InfoCard(stringResource(R.string.about_name), stringResource(R.string.about_name_story), Modifier.weight(1f))
                 }
-                InfoCard(stringResource(R.string.about_update), updateText(update, install), Modifier.fillMaxWidth(), updateColor(update, install))
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    InfoCard(
+                        stringResource(R.string.about_update),
+                        updateText(update, install),
+                        Modifier.weight(1f),
+                        updateColor(update, install)
+                    )
+                    if (storage != null) {
+                        InfoCard(
+                            stringResource(R.string.about_storage),
+                            stringResource(
+                                R.string.about_storage_value,
+                                StorageFormat.formatBytes(storage.freeBytes, locale),
+                                StorageFormat.formatBytes(storage.totalBytes, locale),
+                                StorageFormat.usedPercent(storage.freeBytes, storage.totalBytes)
+                            ),
+                            Modifier.weight(1f)
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -233,7 +281,7 @@ private fun updateNotice(update: UpdateStatus): Notice? = when (update) {
 private fun updateColor(update: UpdateStatus, install: UpdateInstall): Color {
     val palette = LocalPalette.current
     return when {
-        install is UpdateInstall.Failed || update == UpdateStatus.Failed -> Color(0xFFFF8A80)
+        install is UpdateInstall.Failed || update == UpdateStatus.Failed -> palette.error
         update is UpdateStatus.Available || install !is UpdateInstall.Idle -> palette.accent
         else -> palette.textPrimary
     }
@@ -242,6 +290,7 @@ private fun updateColor(update: UpdateStatus, install: UpdateInstall): Color {
 @Composable
 private fun InfoCard(title: String, value: String, modifier: Modifier = Modifier, valueColor: Color = LocalPalette.current.textPrimary) {
     val palette = LocalPalette.current
+    val locale = LocalConfiguration.current.locales[0]
     Column(
         modifier = modifier
             .heightIn(min = 96.dp)
@@ -250,7 +299,7 @@ private fun InfoCard(title: String, value: String, modifier: Modifier = Modifier
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = title.uppercase(), color = palette.textSecondary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp)
+        Text(text = title.uppercase(locale), color = palette.textSecondary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp)
         Text(text = value, color = valueColor, fontSize = 19.sp, fontWeight = FontWeight.Bold)
     }
 }

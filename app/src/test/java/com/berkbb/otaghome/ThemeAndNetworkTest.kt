@@ -58,6 +58,7 @@ class ThemeAndNetworkTest {
             assertFalse(p.focus == p.onFocus)
             assertFalse(p.textPrimary == p.background)
         }
+        assertFalse(Palette.Dark.error == Palette.Light.error)
     }
 
     @Test
@@ -67,6 +68,9 @@ class ThemeAndNetworkTest {
         assertEquals(2, NetworkStatus.wifiBars(-70))
         assertEquals(1, NetworkStatus.wifiBars(-85))
         assertEquals(0, NetworkStatus.wifiBars(-127))
+        assertEquals(3, NetworkStatus.resolveWifiBars(-60, -90))
+        assertEquals(1, NetworkStatus.resolveWifiBars(Int.MIN_VALUE, -85))
+        assertEquals(4, NetworkStatus.resolveWifiBars(null, null))
     }
 
     @Test

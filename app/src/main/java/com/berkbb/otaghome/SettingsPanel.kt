@@ -2,6 +2,7 @@ package com.berkbb.otaghome
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +33,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -45,21 +48,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val SHEET_SHAPE = RoundedCornerShape(topStart = 28.dp, bottomStart = 28.dp)
 
-private enum class SettingsPage { MAIN, BACKGROUND, PRESETS, COLORS, WEATHER, DISPLAY, APPS, BACKUP }
+private enum class SettingsPage {
+    MAIN, BACKGROUND, PRESETS, DEVICE_IMAGES, COLORS, WEATHER,
+    DISPLAY, TOP_BAR, PIN_LOCK, APPS, CATEGORIES, BACKUP
+}
 
 /**
  * Side panel opened by the gear, like Google TV's quick settings: the launcher's theme, background,
  * colours, which system apps it lists and the tabs' order, then shortcuts into the system's language, network and full settings screens.
- * Back on the Background page returns to the main page.
+ * Back on subpages returns to the row that opened them.
  */
 @Composable
 internal fun SettingsPanel(
     themeMode: ThemeMode,
     background: BackgroundSpec,
+    bgRotation: PresetRotation,
+    onCycleBgRotation: () -> Unit,
+    network: NetworkStatus,
     customColors: Map<ColorRole, Int>,
     onColorChange: (ColorRole, Int?) -> Unit,
     onResetColors: () -> Unit,
@@ -87,6 +99,7 @@ internal fun SettingsPanel(
     /** Shows the full-screen ring inside the panel while a change redraws the screen. */
     busy: Boolean,
     onBackupRestored: () -> Unit,
+    onResetAll: () -> Unit,
     onClose: () -> Unit
 ) {
     val palette = LocalPalette.current
@@ -99,10 +112,13 @@ internal fun SettingsPanel(
     fun open(target: SettingsPage) = openerFocus.getValue(target)
 
     Dialog(
-        // Back steps out one page at a time: pictures → background → settings → closed
+        // Back steps out one page at a time: leaf → parent page → settings → closed
         onDismissRequest = {
             page = when (page) {
                 SettingsPage.PRESETS -> SettingsPage.BACKGROUND
+                SettingsPage.DEVICE_IMAGES -> SettingsPage.BACKGROUND.also { returnFrom = page }
+                SettingsPage.TOP_BAR, SettingsPage.PIN_LOCK -> SettingsPage.DISPLAY.also { returnFrom = page }
+                SettingsPage.CATEGORIES -> SettingsPage.APPS.also { returnFrom = page }
                 SettingsPage.BACKGROUND, SettingsPage.COLORS, SettingsPage.WEATHER,
                 SettingsPage.DISPLAY, SettingsPage.APPS, SettingsPage.BACKUP -> SettingsPage.MAIN.also { returnFrom = page }
                 SettingsPage.MAIN -> SettingsPage.MAIN.also { onClose() }
@@ -111,7 +127,9 @@ internal fun SettingsPanel(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         LaunchedEffect(page) {
-            val target = returnFrom?.takeIf { page == SettingsPage.MAIN }?.let(::open) ?: firstRowFocus
+            val restoreParent = page == SettingsPage.MAIN || page == SettingsPage.BACKGROUND ||
+                page == SettingsPage.DISPLAY || page == SettingsPage.APPS
+            val target = returnFrom?.takeIf { restoreParent }?.let(::open) ?: firstRowFocus
             returnFrom = null
             runCatching { target.requestFocus() }
         }
@@ -133,6 +151,18 @@ internal fun SettingsPanel(
                 }
                 return@Box
             }
+            if (page == SettingsPage.DEVICE_IMAGES) {
+                Column(modifier = panel.padding(horizontal = 24.dp, vertical = 32.dp)) {
+                    PanelTitle(stringResource(R.string.bg_device_images_title))
+                    Spacer(modifier = Modifier.height(16.dp))
+                    DeviceImagesPage(
+                        selectedUri = (background as? BackgroundSpec.Image)?.uri,
+                        firstFocus = firstRowFocus,
+                        onPickUri = { uri -> onBackgroundChange(BackgroundSpec.Image(uri)) }
+                    )
+                }
+                return@Box
+            }
             if (showAbout) AboutWindow(viewModel = viewModel, noticeSeconds = noticeSeconds, onClose = { showAbout = false })
             Column(
                 modifier = panel
@@ -147,7 +177,10 @@ internal fun SettingsPanel(
                             SettingsPage.COLORS -> R.string.settings_colors
                             SettingsPage.WEATHER -> R.string.settings_weather
                             SettingsPage.DISPLAY -> R.string.settings_display
+                            SettingsPage.TOP_BAR -> R.string.settings_top_bar
+                            SettingsPage.PIN_LOCK -> R.string.settings_pin_lock
                             SettingsPage.APPS -> R.string.settings_apps
+                            SettingsPage.CATEGORIES -> R.string.settings_categories
                             SettingsPage.BACKUP -> R.string.settings_backup
                             else -> R.string.settings_title
                         }
@@ -194,7 +227,7 @@ internal fun SettingsPanel(
                             modifier = Modifier.focusRequester(open(SettingsPage.BACKUP)),
                             onClick = { page = SettingsPage.BACKUP }
                         )
-                        SystemRows()
+                        SystemRows(network)
                         SettingsRow(
                             iconRes = R.drawable.ic_info,
                             title = stringResource(R.string.settings_about),
@@ -202,9 +235,18 @@ internal fun SettingsPanel(
                             onClick = { showAbout = true }
                         )
                     }
-                    SettingsPage.BACKGROUND -> BackgroundPage(background, veil, onCycleVeil, firstRowFocus, onBackgroundChange) {
-                        page = SettingsPage.PRESETS
-                    }
+                    SettingsPage.BACKGROUND -> BackgroundPage(
+                        background = background,
+                        bgRotation = bgRotation,
+                        onCycleBgRotation = onCycleBgRotation,
+                        veil = veil,
+                        onCycleVeil = onCycleVeil,
+                        firstRowFocus = firstRowFocus,
+                        chooseImageFocus = open(SettingsPage.DEVICE_IMAGES),
+                        onBackgroundChange = onBackgroundChange,
+                        onOpenPresets = { page = SettingsPage.PRESETS },
+                        onOpenDeviceImages = { page = SettingsPage.DEVICE_IMAGES }
+                    )
                     SettingsPage.COLORS -> ColorsPage(customColors, firstRowFocus, onColorChange, onResetColors)
                     SettingsPage.WEATHER -> WeatherPage(
                         settings = weatherSettings,
@@ -216,10 +258,33 @@ internal fun SettingsPanel(
                         onCycleUnit = viewModel::cycleTempUnit,
                         search = searchCities
                     )
-                    SettingsPage.DISPLAY -> DisplayPage(viewModel, noticeSeconds, onNoticeSecondsChange, firstRowFocus)
-                    SettingsPage.APPS -> AppsPage(viewModel, systemApps, favoritesSort, appsSort, onCycleSystemApps, onCycleFavoritesSort, onCycleAppsSort, firstRowFocus)
-                    SettingsPage.BACKUP -> BackupPage(viewModel, firstRowFocus, onBackupRestored)
-                    SettingsPage.PRESETS -> Unit
+                    SettingsPage.DISPLAY -> DisplayPage(
+                        viewModel = viewModel,
+                        noticeSeconds = noticeSeconds,
+                        onNoticeSecondsChange = onNoticeSecondsChange,
+                        firstRowFocus = firstRowFocus,
+                        topBarFocus = open(SettingsPage.TOP_BAR),
+                        pinLockFocus = open(SettingsPage.PIN_LOCK),
+                        onOpenTopBar = { page = SettingsPage.TOP_BAR },
+                        onOpenPinLock = { page = SettingsPage.PIN_LOCK }
+                    )
+                    SettingsPage.TOP_BAR -> TopBarPage(viewModel, firstRowFocus)
+                    SettingsPage.PIN_LOCK -> PinLockPage(viewModel, firstRowFocus)
+                    SettingsPage.APPS -> AppsPage(
+                        viewModel = viewModel,
+                        systemApps = systemApps,
+                        favoritesSort = favoritesSort,
+                        appsSort = appsSort,
+                        onCycleSystemApps = onCycleSystemApps,
+                        onCycleFavoritesSort = onCycleFavoritesSort,
+                        onCycleAppsSort = onCycleAppsSort,
+                        firstRowFocus = firstRowFocus,
+                        categoriesFocus = open(SettingsPage.CATEGORIES),
+                        onOpenCategories = { page = SettingsPage.CATEGORIES }
+                    )
+                    SettingsPage.CATEGORIES -> CategoriesPage(viewModel, firstRowFocus)
+                    SettingsPage.BACKUP -> BackupPage(viewModel, firstRowFocus, onBackupRestored, onResetAll)
+                    SettingsPage.PRESETS, SettingsPage.DEVICE_IMAGES -> Unit
                 }
             }
             BusyOverlay(visible = busy)
@@ -269,12 +334,23 @@ private fun MainPage(
     )
 }
 
-/** How the home screen looks and opens: clock format, card size, names, start tab, Home button, message time. */
+/** How the home screen looks and opens: clock, cards, top bar buttons, PIN lock, shortcuts and auto-updates. */
 @Composable
-private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoticeSecondsChange: (Int) -> Unit, firstRowFocus: FocusRequester) {
+private fun DisplayPage(
+    viewModel: LauncherViewModel,
+    noticeSeconds: Int,
+    onNoticeSecondsChange: (Int) -> Unit,
+    firstRowFocus: FocusRequester,
+    topBarFocus: FocusRequester,
+    pinLockFocus: FocusRequester,
+    onOpenTopBar: () -> Unit,
+    onOpenPinLock: () -> Unit
+) {
     val display by viewModel.display.collectAsState()
+    val lock by viewModel.lockSettings.collectAsState()
     var pickNoticeSeconds by remember { mutableStateOf(false) }
     val busy = LocalBusy.current
+    val visibleTopBar = listOf(display.showSearch, display.showVoiceSearch, display.showInputs, display.showNetwork).count { it }
     SettingsRow(
         iconRes = R.drawable.ic_timer,
         title = stringResource(R.string.settings_clock_format),
@@ -290,6 +366,12 @@ private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoti
         onClick = { busy(); viewModel.cycleCardSize() }
     )
     SettingsRow(
+        iconRes = R.drawable.ic_layers,
+        title = stringResource(R.string.settings_card_opacity),
+        value = stringResource(display.cardOpacity.labelRes),
+        onClick = viewModel::cycleCardOpacity
+    )
+    SettingsRow(
         iconRes = if (display.showNames) R.drawable.ic_visibility else R.drawable.ic_visibility_off,
         title = stringResource(R.string.settings_show_names),
         value = stringResource(if (display.showNames) R.string.state_on else R.string.state_off),
@@ -301,7 +383,34 @@ private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoti
         value = stringResource(display.startTab.labelRes),
         onClick = viewModel::cycleStartTab
     )
+    SettingsRow(
+        iconRes = R.drawable.ic_view_module,
+        title = stringResource(R.string.settings_top_bar),
+        value = stringResource(R.string.top_bar_visible_count, visibleTopBar, 4),
+        modifier = Modifier.focusRequester(topBarFocus),
+        onClick = onOpenTopBar
+    )
+    SettingsRow(
+        iconRes = R.drawable.ic_apps,
+        title = stringResource(R.string.settings_number_shortcuts),
+        value = stringResource(if (display.numberShortcuts) R.string.state_on else R.string.state_off),
+        onClick = viewModel::toggleNumberShortcuts
+    )
     HomeOverrideRow()
+    MediaControlsRow(viewModel)
+    SettingsRow(
+        iconRes = if (lock.hasPin) R.drawable.ic_lock else R.drawable.ic_lock_open,
+        title = stringResource(R.string.settings_pin_lock),
+        value = stringResource(if (lock.hasPin) R.string.state_on else R.string.state_off),
+        modifier = Modifier.focusRequester(pinLockFocus),
+        onClick = onOpenPinLock
+    )
+    SettingsRow(
+        iconRes = R.drawable.ic_update,
+        title = stringResource(R.string.settings_auto_update),
+        value = stringResource(display.autoUpdateInterval.labelRes),
+        onClick = viewModel::cycleAutoUpdateInterval
+    )
     SettingsRow(
         iconRes = R.drawable.ic_timer,
         title = stringResource(R.string.settings_notice_time),
@@ -317,6 +426,117 @@ private fun DisplayPage(viewModel: LauncherViewModel, noticeSeconds: Int, onNoti
             onPick = { onNoticeSecondsChange(NoticeTimer.OPTIONS[it]) },
             onDismiss = { pickNoticeSeconds = false }
         )
+    }
+}
+
+/** Toggles for optional buttons in the top-right bar; Settings stays visible. */
+@Composable
+private fun TopBarPage(viewModel: LauncherViewModel, firstRowFocus: FocusRequester) {
+    val display by viewModel.display.collectAsState()
+    val on = stringResource(R.string.state_on)
+    val off = stringResource(R.string.state_off)
+    SettingsRow(
+        iconRes = R.drawable.ic_search,
+        title = stringResource(R.string.cd_search),
+        value = if (display.showSearch) on else off,
+        modifier = Modifier.focusRequester(firstRowFocus),
+        onClick = viewModel::toggleShowSearch
+    )
+    SettingsRow(
+        iconRes = R.drawable.ic_mic,
+        title = stringResource(R.string.cd_voice_search),
+        value = if (display.showVoiceSearch) on else off,
+        onClick = viewModel::toggleShowVoiceSearch
+    )
+    SettingsRow(
+        iconRes = R.drawable.ic_input,
+        title = stringResource(R.string.cd_inputs),
+        value = if (display.showInputs) on else off,
+        onClick = viewModel::toggleShowInputs
+    )
+    SettingsRow(
+        iconRes = R.drawable.ic_wifi_4,
+        title = stringResource(R.string.settings_network),
+        value = if (display.showNetwork) on else off,
+        onClick = viewModel::toggleShowNetwork
+    )
+}
+
+private enum class PinPageAction { SET_NEW, VERIFY_CHANGE, SET_AFTER_VERIFY, VERIFY_TOGGLE_SETTINGS, VERIFY_REMOVE }
+
+/** Optional 4-digit PIN lock for Settings and individual apps. */
+@Composable
+private fun PinLockPage(viewModel: LauncherViewModel, firstRowFocus: FocusRequester) {
+    val lock by viewModel.lockSettings.collectAsState()
+    val context = LocalContext.current
+    val notify = LocalNotice.current
+    var action by remember { mutableStateOf<PinPageAction?>(null) }
+
+    if (!lock.hasPin) {
+        SettingsRow(
+            iconRes = R.drawable.ic_lock,
+            title = stringResource(R.string.pin_set),
+            value = null,
+            modifier = Modifier.focusRequester(firstRowFocus),
+            onClick = { action = PinPageAction.SET_NEW }
+        )
+    } else {
+        SettingsRow(
+            iconRes = R.drawable.ic_lock,
+            title = stringResource(R.string.pin_lock_settings),
+            value = stringResource(if (lock.lockSettings) R.string.state_on else R.string.state_off),
+            modifier = Modifier.focusRequester(firstRowFocus),
+            onClick = { action = PinPageAction.VERIFY_TOGGLE_SETTINGS }
+        )
+        SettingsRow(
+            iconRes = R.drawable.ic_edit,
+            title = stringResource(R.string.pin_change),
+            value = null,
+            onClick = { action = PinPageAction.VERIFY_CHANGE }
+        )
+        SettingsRow(
+            iconRes = R.drawable.ic_lock_open,
+            title = stringResource(R.string.pin_remove),
+            value = null,
+            onClick = { action = PinPageAction.VERIFY_REMOVE }
+        )
+    }
+
+    when (action) {
+        PinPageAction.SET_NEW, PinPageAction.SET_AFTER_VERIFY -> PinDialog(
+            title = stringResource(R.string.settings_pin_lock),
+            mode = PinDialogMode.SET,
+            onSuccess = { pin ->
+                viewModel.setPin(pin)
+                notify(Notice(context.getString(R.string.msg_pin_saved), R.drawable.ic_lock))
+            },
+            onDismiss = { action = null }
+        )
+        PinPageAction.VERIFY_CHANGE -> PinDialog(
+            title = stringResource(R.string.pin_enter_current),
+            mode = PinDialogMode.VERIFY,
+            verify = viewModel::verifyPin,
+            onSuccess = { action = PinPageAction.SET_AFTER_VERIFY },
+            onDismiss = { action = null }
+        )
+        PinPageAction.VERIFY_TOGGLE_SETTINGS -> PinDialog(
+            title = stringResource(R.string.settings_pin_lock),
+            mode = PinDialogMode.VERIFY,
+            verify = viewModel::verifyPin,
+            onSuccess = { viewModel.toggleLockSettings() },
+            onDismiss = { action = null }
+        )
+        PinPageAction.VERIFY_REMOVE -> PinDialog(
+            title = stringResource(R.string.pin_remove),
+            mode = PinDialogMode.VERIFY,
+            verify = viewModel::verifyPin,
+            onSuccess = {
+                viewModel.removePin()
+                notify(Notice(context.getString(R.string.msg_pin_removed), R.drawable.ic_lock_open))
+            },
+            onDismiss = { action = null }
+        )
+        null -> Unit
     }
 }
 
@@ -432,7 +652,7 @@ private fun HomeOverrideDialog(direct: Boolean, grantCommand: String, onTurnOn: 
     }
 }
 
-/** Which apps show and in what order, and the apps the user hid (OK on one shows it again). */
+/** Which apps show, custom categories and order, and apps the user hid (OK shows one again). */
 @Composable
 private fun AppsPage(
     viewModel: LauncherViewModel,
@@ -442,7 +662,9 @@ private fun AppsPage(
     onCycleSystemApps: () -> Unit,
     onCycleFavoritesSort: () -> Unit,
     onCycleAppsSort: () -> Unit,
-    firstRowFocus: FocusRequester
+    firstRowFocus: FocusRequester,
+    categoriesFocus: FocusRequester,
+    onOpenCategories: () -> Unit
 ) {
     val ui by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -455,6 +677,13 @@ private fun AppsPage(
         onClick = onCycleSystemApps
     )
     SortRows(favoritesSort, appsSort, onCycleFavoritesSort, onCycleAppsSort)
+    SettingsRow(
+        iconRes = R.drawable.ic_folder,
+        title = stringResource(R.string.settings_categories),
+        value = if (ui.categories.isEmpty()) stringResource(R.string.categories_none) else ui.categories.size.toString(),
+        modifier = Modifier.focusRequester(categoriesFocus),
+        onClick = onOpenCategories
+    )
     val hidden = ui.hidden.mapNotNull { pkg -> ui.apps.firstOrNull { it.packageName == pkg } }
     SectionLabel(stringResource(R.string.settings_hidden_apps), selected = false)
     if (hidden.isEmpty()) {
@@ -473,14 +702,95 @@ private fun AppsPage(
     }
 }
 
-/** Back up every setting to a file, or restore them from one, through the TV's document picker. */
+/** Create, rename or delete user category tabs (up to 6). */
 @Composable
-private fun BackupPage(viewModel: LauncherViewModel, firstRowFocus: FocusRequester, onRestored: () -> Unit) {
+private fun CategoriesPage(viewModel: LauncherViewModel, firstRowFocus: FocusRequester) {
+    val ui by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+    val notify = LocalNotice.current
+    var adding by remember { mutableStateOf(false) }
+    var actingOn by remember { mutableStateOf<AppCategory?>(null) }
+    var renaming by remember { mutableStateOf<AppCategory?>(null) }
+    var deleting by remember { mutableStateOf<AppCategory?>(null) }
+
+    SettingsRow(
+        iconRes = R.drawable.ic_folder,
+        title = stringResource(R.string.categories_add),
+        value = null,
+        modifier = Modifier.focusRequester(firstRowFocus),
+        onClick = {
+            if (ui.categories.size >= AppCatalog.MAX_CATEGORIES) {
+                notify(Notice(context.getString(R.string.msg_category_limit), R.drawable.ic_folder))
+            } else {
+                adding = true
+            }
+        }
+    )
+    if (ui.categories.isEmpty()) {
+        Text(text = stringResource(R.string.categories_none), color = LocalPalette.current.textSecondary, fontSize = 14.sp)
+    }
+    ui.categories.forEach { category ->
+        SettingsRow(
+            iconRes = R.drawable.ic_folder,
+            title = category.name,
+            value = category.packages.size.toString(),
+            onClick = { actingOn = category }
+        )
+    }
+
+    if (adding) {
+        CategoryNameDialog(
+            title = stringResource(R.string.category_name_title),
+            initial = "",
+            onSave = { name -> viewModel.addCategory(name) },
+            onDismiss = { adding = false }
+        )
+    }
+    actingOn?.let { category ->
+        ChoiceDialog(
+            title = category.name,
+            options = listOf(stringResource(R.string.menu_rename), stringResource(R.string.category_delete)),
+            selected = -1,
+            onPick = { idx -> if (idx == 0) renaming = category else deleting = category },
+            onDismiss = { actingOn = null }
+        )
+    }
+    renaming?.let { category ->
+        CategoryNameDialog(
+            title = stringResource(R.string.category_rename_title),
+            initial = category.name,
+            onSave = { name -> viewModel.renameCategory(category.id, name) },
+            onDismiss = { renaming = null }
+        )
+    }
+    deleting?.let { category ->
+        ConfirmDialog(
+            title = stringResource(R.string.category_delete),
+            message = stringResource(R.string.category_delete_confirm, category.name),
+            confirmLabel = stringResource(R.string.category_delete),
+            onConfirm = { viewModel.deleteCategory(category.id) },
+            onDismiss = { deleting = null }
+        )
+    }
+}
+
+/** Back up every setting to a file, restore them from one, or reset everything to defaults. */
+@Composable
+private fun BackupPage(
+    viewModel: LauncherViewModel,
+    firstRowFocus: FocusRequester,
+    onRestored: () -> Unit,
+    onResetAll: () -> Unit
+) {
     val context = LocalContext.current
     val notify = LocalNotice.current
     val busy = LocalBusy.current
     val saveLabel = stringResource(R.string.backup_save)
     val restoreLabel = stringResource(R.string.backup_restore)
+    val hasSavePicker = remember(context) { context.hasDocumentPicker(Intent.ACTION_CREATE_DOCUMENT, "application/json") }
+    val hasOpenPicker = remember(context) { context.hasDocumentPicker(Intent.ACTION_OPEN_DOCUMENT, "application/json") }
+    val localFile = remember(context) { context.localBackupFile() }
+    var confirmingReset by remember { mutableStateOf(false) }
     val save = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
         val written = runCatching {
@@ -504,24 +814,65 @@ private fun BackupPage(viewModel: LauncherViewModel, firstRowFocus: FocusRequest
     SettingsRow(
         iconRes = R.drawable.ic_backup,
         title = saveLabel,
-        value = stringResource(R.string.backup_save_hint),
+        value = if (hasSavePicker) stringResource(R.string.backup_save_hint)
+        else stringResource(R.string.backup_save_local_hint, localFile.absolutePath),
         modifier = Modifier.focusRequester(firstRowFocus),
         onClick = {
-            if (runCatching { save.launch("otaghome-backup.json") }.isFailure) {
-                notify(Notice(context.getString(R.string.msg_launch_failed, saveLabel), R.drawable.ic_error))
+            if (hasSavePicker) {
+                if (runCatching { save.launch("otaghome-backup.json") }.isFailure) {
+                    notify(Notice(context.getString(R.string.msg_launch_failed, saveLabel), R.drawable.ic_error))
+                }
+            } else {
+                val written = runCatching {
+                    localFile.parentFile?.mkdirs()
+                    localFile.writeText(viewModel.exportBackup())
+                    true
+                }.getOrDefault(false)
+                notify(
+                    if (written) Notice(context.getString(R.string.msg_backup_saved_local, localFile.absolutePath), R.drawable.ic_backup)
+                    else Notice(context.getString(R.string.msg_backup_failed), R.drawable.ic_error)
+                )
             }
         }
     )
     SettingsRow(
         iconRes = R.drawable.ic_restore,
         title = restoreLabel,
-        value = stringResource(R.string.backup_restore_hint),
+        value = if (hasOpenPicker) stringResource(R.string.backup_restore_hint)
+        else stringResource(R.string.backup_restore_local_hint, localFile.absolutePath),
         onClick = {
-            if (runCatching { restore.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }.isFailure) {
-                notify(Notice(context.getString(R.string.msg_launch_failed, restoreLabel), R.drawable.ic_error))
+            if (hasOpenPicker) {
+                if (runCatching { restore.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }.isFailure) {
+                    notify(Notice(context.getString(R.string.msg_launch_failed, restoreLabel), R.drawable.ic_error))
+                }
+            } else if (!localFile.isFile) {
+                notify(Notice(context.getString(R.string.msg_backup_local_missing, localFile.absolutePath), R.drawable.ic_error))
+            } else {
+                val text = runCatching { localFile.readText() }.getOrNull()
+                if (text != null && viewModel.importBackup(text)) {
+                    busy()
+                    onRestored()
+                } else {
+                    notify(Notice(context.getString(R.string.msg_backup_invalid), R.drawable.ic_error))
+                }
             }
         }
     )
+    SettingsRow(
+        iconRes = R.drawable.ic_delete,
+        title = stringResource(R.string.settings_reset_all),
+        value = stringResource(R.string.settings_reset_all_hint),
+        onClick = { confirmingReset = true }
+    )
+    if (confirmingReset) {
+        ConfirmDialog(
+            title = stringResource(R.string.reset_confirm_title),
+            message = stringResource(R.string.reset_confirm_text),
+            confirmLabel = stringResource(R.string.btn_reset),
+            onConfirm = { busy(); onResetAll() },
+            onDismiss = { confirmingReset = false }
+        )
+    }
 }
 
 /** Order of the Favorites and All apps tabs: the user's own, or by name either way. */
@@ -548,10 +899,9 @@ private fun SortRows(
 
 /** Shortcuts into the system's language, network and full settings screens. */
 @Composable
-private fun SystemRows() {
+private fun SystemRows(network: NetworkStatus) {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
-    val network by rememberNetworkStatus()
     val languageLabel = stringResource(R.string.settings_language)
     val networkLabel = stringResource(R.string.settings_network)
     val systemLabel = stringResource(R.string.settings_system)
@@ -595,16 +945,20 @@ private enum class PickTarget { SOLID, START, END }
 @Composable
 private fun BackgroundPage(
     background: BackgroundSpec,
+    bgRotation: PresetRotation,
+    onCycleBgRotation: () -> Unit,
     veil: VeilLevel,
     onCycleVeil: () -> Unit,
     firstRowFocus: FocusRequester,
+    chooseImageFocus: FocusRequester,
     onBackgroundChange: (BackgroundSpec) -> Unit,
-    onOpenPresets: () -> Unit
+    onOpenPresets: () -> Unit,
+    onOpenDeviceImages: () -> Unit
 ) {
     val context = LocalContext.current
     val inUse = stringResource(R.string.bg_in_use)
     val chooseLabel = stringResource(R.string.bg_choose_image)
-    val notify = LocalNotice.current
+    val hasImagePicker = remember(context) { context.hasDocumentPicker(Intent.ACTION_OPEN_DOCUMENT, "image/*") }
 
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
         if (uri != null) {
@@ -626,15 +980,40 @@ private fun BackgroundPage(
         modifier = Modifier.focusRequester(firstRowFocus),
         onClick = onOpenPresets
     )
+    if (background is BackgroundSpec.Preset || background is BackgroundSpec.Image) {
+        SettingsRow(
+            iconRes = R.drawable.ic_autorenew,
+            title = stringResource(R.string.settings_bg_rotation),
+            value = stringResource(bgRotation.labelRes),
+            onClick = onCycleBgRotation
+        )
+    }
     SettingsRow(
         iconRes = R.drawable.ic_image,
         title = chooseLabel,
-        value = if (background is BackgroundSpec.Image) inUse else null,
+        value = when {
+            background is BackgroundSpec.Image -> inUse
+            !hasImagePicker -> stringResource(R.string.bg_choose_image_local_hint)
+            else -> null
+        },
+        modifier = if (hasImagePicker) Modifier else Modifier.focusRequester(chooseImageFocus),
         onClick = {
-            val opened = runCatching { picker.launch(arrayOf("image/*")) }.isSuccess
-            if (!opened) notify(Notice(context.getString(R.string.msg_launch_failed, chooseLabel), R.drawable.ic_error))
+            if (hasImagePicker) {
+                if (runCatching { picker.launch(arrayOf("image/*")) }.isFailure) onOpenDeviceImages()
+            } else {
+                onOpenDeviceImages()
+            }
         }
     )
+    if (hasImagePicker) {
+        SettingsRow(
+            iconRes = R.drawable.ic_folder,
+            title = stringResource(R.string.bg_device_images_title),
+            value = stringResource(R.string.bg_choose_image_local_hint),
+            modifier = Modifier.focusRequester(chooseImageFocus),
+            onClick = onOpenDeviceImages
+        )
+    }
     // Only pictures are veiled, so the choice shows while one is the background
     if (background is BackgroundSpec.Preset || background is BackgroundSpec.Image) {
         SettingsRow(
@@ -682,6 +1061,247 @@ private fun BackgroundPage(
     }
 }
 
+/** In-app picture browser shared by Background settings (pickerless TVs or browsing local folders) and custom app covers. */
+@Composable
+internal fun DeviceImagesPage(
+    selectedUri: String?,
+    firstFocus: FocusRequester,
+    onPickUri: (String) -> Unit,
+    onOpenSystemPicker: (() -> Unit)? = null,
+    onReset: (() -> Unit)? = null,
+    importContentPicker: Boolean = true
+) {
+    val context = LocalContext.current
+    val palette = LocalPalette.current
+    val notify = LocalNotice.current
+    val scope = rememberCoroutineScope()
+    val appFolderLabel = stringResource(R.string.bg_folder_app)
+    val deviceFolderLabel = stringResource(R.string.bg_folder_device)
+    val appFolderPath = remember(context) { context.localPicturesDir().absolutePath }
+    var hasPermission by remember { mutableStateOf(context.hasStorageImagePermission()) }
+    val hasContentPicker = remember(context) { context.hasImageContentPicker() }
+    var refreshTick by remember { mutableIntStateOf(0) }
+    var images by remember { mutableStateOf<List<DeviceImage>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        hasPermission = granted || context.hasStorageImagePermission()
+        if (!hasPermission) {
+            notify(Notice(context.getString(R.string.bg_device_permission_denied), R.drawable.ic_image))
+        }
+    }
+    val getContent = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        if (!importContentPicker) {
+            onPickUri(uri.toString())
+            return@rememberLauncherForActivityResult
+        }
+        scope.launch {
+            val localUri = withContext(Dispatchers.IO) { context.importBackgroundImage(uri) }
+            if (localUri != null) {
+                onPickUri(localUri)
+            } else {
+                notify(Notice(context.getString(R.string.msg_image_failed), R.drawable.ic_image))
+            }
+        }
+    }
+
+    LaunchedEffect(hasPermission, refreshTick, appFolderLabel, deviceFolderLabel) {
+        loading = true
+        images = withContext(Dispatchers.IO) {
+            context.loadDeviceImages(appFolderLabel, deviceFolderLabel)
+        }
+        loading = false
+    }
+
+    val focusTarget = when {
+        onOpenSystemPicker != null -> "system"
+        onReset != null -> "reset"
+        !hasPermission -> "grant"
+        hasContentPicker -> "content"
+        images.isNotEmpty() -> "firstImage"
+        else -> "refresh"
+    }
+    LaunchedEffect(loading, focusTarget) {
+        if (!loading) runCatching { firstFocus.requestFocus() }
+    }
+
+    val grouped = remember(images) { images.groupBy { it.folder } }
+    val firstUri = images.firstOrNull()?.uri
+    val refreshLabel = stringResource(R.string.bg_device_refresh)
+    val otherAppLabel = stringResource(R.string.bg_choose_other_app)
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(bottom = 24.dp)
+    ) {
+        if (onOpenSystemPicker != null) {
+            item(key = "system", span = { GridItemSpan(maxLineSpan) }) {
+                SettingsRow(
+                    iconRes = R.drawable.ic_image,
+                    title = stringResource(R.string.bg_choose_system),
+                    value = null,
+                    modifier = if (focusTarget == "system") Modifier.focusRequester(firstFocus) else Modifier,
+                    onClick = onOpenSystemPicker
+                )
+            }
+        }
+        if (onReset != null) {
+            item(key = "reset", span = { GridItemSpan(maxLineSpan) }) {
+                SettingsRow(
+                    iconRes = R.drawable.ic_close,
+                    title = stringResource(R.string.bg_cover_reset),
+                    value = null,
+                    modifier = if (focusTarget == "reset") Modifier.focusRequester(firstFocus) else Modifier,
+                    onClick = onReset
+                )
+            }
+        }
+        if (!hasPermission) {
+            item(key = "grant", span = { GridItemSpan(maxLineSpan) }) {
+                SettingsRow(
+                    iconRes = R.drawable.ic_image,
+                    title = stringResource(R.string.bg_device_grant),
+                    value = stringResource(R.string.bg_device_grant_hint),
+                    modifier = if (focusTarget == "grant") Modifier.focusRequester(firstFocus) else Modifier,
+                    onClick = { permissionLauncher.launch(DeviceImageCatalog.storageImagePermission(Build.VERSION.SDK_INT)) }
+                )
+            }
+        }
+        if (hasContentPicker) {
+            item(key = "content", span = { GridItemSpan(maxLineSpan) }) {
+                SettingsRow(
+                    iconRes = R.drawable.ic_wallpaper,
+                    title = otherAppLabel,
+                    value = null,
+                    modifier = if (focusTarget == "content") Modifier.focusRequester(firstFocus) else Modifier,
+                    onClick = {
+                        if (runCatching { getContent.launch("image/*") }.isFailure) {
+                            notify(Notice(context.getString(R.string.msg_launch_failed, otherAppLabel), R.drawable.ic_error))
+                        }
+                    }
+                )
+            }
+        }
+        if (!loading && images.isEmpty()) {
+            item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(Corners.medium)
+                        .background(palette.card)
+                        .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.bg_device_empty),
+                        color = palette.textSecondary,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
+                    )
+                    Text(
+                        text = appFolderPath,
+                        color = palette.textPrimary,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(Corners.small)
+                            .background(palette.background)
+                            .padding(10.dp)
+                    )
+                }
+            }
+            item(key = "refresh", span = { GridItemSpan(maxLineSpan) }) {
+                SettingsRow(
+                    iconRes = R.drawable.ic_autorenew,
+                    title = refreshLabel,
+                    value = null,
+                    modifier = if (focusTarget == "refresh") Modifier.focusRequester(firstFocus) else Modifier,
+                    onClick = { refreshTick++ }
+                )
+            }
+        } else if (images.isNotEmpty()) {
+            grouped.forEach { (folder, folderImages) ->
+                item(key = "header:$folder", span = { GridItemSpan(maxLineSpan) }) {
+                    SectionLabel(
+                        text = folder,
+                        selected = folderImages.any { it.uri == selectedUri }
+                    )
+                }
+                items(folderImages, key = { it.uri }) { image ->
+                    DeviceImageThumb(
+                        image = image,
+                        selected = image.uri == selectedUri,
+                        modifier = if (focusTarget == "firstImage" && image.uri == firstUri) {
+                            Modifier.focusRequester(firstFocus)
+                        } else Modifier,
+                        onClick = { onPickUri(image.uri) }
+                    )
+                }
+            }
+            item(key = "folder-hint", span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    text = stringResource(R.string.bg_device_folder_hint, appFolderPath),
+                    color = palette.textSecondary,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 6.dp)
+                )
+            }
+            item(key = "refresh", span = { GridItemSpan(maxLineSpan) }) {
+                SettingsRow(
+                    iconRes = R.drawable.ic_autorenew,
+                    title = refreshLabel,
+                    value = null,
+                    onClick = { refreshTick++ }
+                )
+            }
+        }
+    }
+}
+
+/** A thumbnail tile for a device or app-folder picture, decoded asynchronously off the UI thread. */
+@Composable
+private fun DeviceImageThumb(
+    image: DeviceImage,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val palette = LocalPalette.current
+    val thumb by produceState<ImageBitmap?>(null, image.uri) {
+        value = withContext(Dispatchers.IO) {
+            context.decodeScaledBitmap(image.uri, 320, 180)?.asImageBitmap()
+        }
+    }
+    ThumbCard(title = image.name, selected = selected, modifier = modifier, onClick = onClick) {
+        val bitmap = thumb
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxSize().background(palette.background),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_image),
+                    contentDescription = null,
+                    tint = palette.textSecondary,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+    }
+}
+
 /** Every ready-made picture in two columns, grouped under their section names; choosing one applies it. */
 @Composable
 private fun PresetsGrid(
@@ -719,6 +1339,25 @@ private fun PresetsGrid(
 /** A ready-made picture: its preview with its name; the one in use is framed in the accent. */
 @Composable
 private fun PresetThumb(image: PresetImage, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    ThumbCard(title = stringResource(image.labelRes), selected = selected, modifier = modifier, onClick = onClick) {
+        Image(
+            painter = painterResource(image.drawableRes),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+    }
+}
+
+/** Shared card container for thumbnail grids (16:9 preview, label, focus fill and active border). */
+@Composable
+private fun ThumbCard(
+    title: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    preview: @Composable () -> Unit
+) {
     val palette = LocalPalette.current
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
@@ -736,17 +1375,16 @@ private fun PresetThumb(image: PresetImage, selected: Boolean, modifier: Modifie
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .padding(6.dp)
     ) {
-        Image(
-            painter = painterResource(image.drawableRes),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .clip(Corners.small)
-        )
+        ) {
+            preview()
+        }
         Text(
-            text = stringResource(image.labelRes),
+            text = title,
             color = if (isFocused) palette.onFocus else palette.textPrimary,
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold,

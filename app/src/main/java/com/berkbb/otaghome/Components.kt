@@ -1,8 +1,15 @@
 package com.berkbb.otaghome
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.text.format.DateFormat
 import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.Animatable
@@ -69,56 +76,80 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import kotlin.math.roundToInt
 import java.util.Date
 
+private data class TopBarButtonSpec(
+    @param:DrawableRes val iconRes: Int,
+    val contentDescription: String,
+    val onClick: () -> Unit
+)
+
 /**
- * Top bar: the clock on the left, the tabs in the centre, and Pitwall-style buttons on the right
- * for search, voice search, inputs, network and settings.
+ * Top bar: the clickable clock/weather card on the left, the tabs in the centre, and Pitwall-style
+ * buttons on the right (configurable in Settings → Display → Top bar).
  */
 @Composable
 internal fun TopBar(
-    tab: LauncherTab,
-    onSelectTab: (LauncherTab) -> Unit,
-    favoritesTabFocus: FocusRequester,
-    allAppsTabFocus: FocusRequester,
+    tab: HomeTab,
+    categories: List<AppCategory>,
+    onSelectTab: (HomeTab) -> Unit,
+    tabFocus: (HomeTab) -> FocusRequester,
+    onOpenClock: () -> Unit,
     onOpenSettings: () -> Unit,
     upTargets: UpTargets,
     onFocusTabs: () -> Unit,
     /** Shown in the clock card; null when the weather is off or not known yet. */
     weather: WeatherNow?,
     temperatureUnit: TempUnit,
-    clockFormat: ClockFormat,
+    display: DisplaySettings,
+    network: NetworkStatus,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val buttonFocus = remember { List(5) { FocusRequester() } }
     // Each control records where it sits, so a card can send Up to the one above it
     fun Modifier.upTarget(key: String, focus: () -> Unit) = onGloballyPositioned {
         upTargets.place(key, it.boundsInRoot().center.x, focus)
     }
-    fun Modifier.upButton(index: Int) = focusRequester(buttonFocus[index])
-        .upTarget("button$index") { buttonFocus[index].requestFocus() }
+    val clockFocus = remember { FocusRequester() }
     val searchLabel = stringResource(R.string.cd_search)
     val voiceLabel = stringResource(R.string.cd_voice_search)
     val networkLabel = stringResource(R.string.settings_network)
     val inputsLabel = stringResource(R.string.cd_inputs)
-    val network by rememberNetworkStatus()
+    val settingsLabel = stringResource(R.string.settings_title)
+    val networkDesc = networkDescription(network)
     val open = rememberOpener()
+    val actions = buildList {
+        if (display.showSearch) add(TopBarButtonSpec(R.drawable.ic_search, searchLabel) { open(context.keyboardSearchIntent(), searchLabel) })
+        if (display.showVoiceSearch) add(TopBarButtonSpec(R.drawable.ic_mic, voiceLabel) { open(context.voiceSearchIntent(), voiceLabel) })
+        if (display.showInputs) add(TopBarButtonSpec(R.drawable.ic_input, inputsLabel) { open(context.inputsIntent(), inputsLabel) })
+        if (display.showNetwork) add(TopBarButtonSpec(network.iconRes, networkDesc) { open(context.wifiSettingsIntent(), networkLabel) })
+        add(TopBarButtonSpec(R.drawable.ic_settings, settingsLabel, onOpenSettings))
+    }
+    val buttonFocus = remember(actions.size) { List(actions.size) { FocusRequester() } }
 
     // Measured rather than fixed, so the tabs never run into the clock or the buttons on any screen
     Layout(
         modifier = modifier.fillMaxWidth(),
         content = {
-            Clock(weather = weather, temperatureUnit = temperatureUnit, clockFormat = clockFormat)
+            Clock(
+                weather = weather,
+                temperatureUnit = temperatureUnit,
+                clockFormat = display.clockFormat,
+                cardOpacity = display.cardOpacity,
+                onClick = onOpenClock,
+                modifier = Modifier
+                    .focusRequester(clockFocus)
+                    .upTarget("clock") { clockFocus.requestFocus() }
+            )
 
             TabBar(
                 tab = tab,
+                categories = categories,
                 onSelectTab = onSelectTab,
-                favoritesTabFocus = favoritesTabFocus,
-                allAppsTabFocus = allAppsTabFocus,
+                tabFocus = tabFocus,
+                cardOpacity = display.cardOpacity,
                 modifier = Modifier.upTarget("tabs", onFocusTabs)
             )
 
@@ -126,39 +157,21 @@ internal fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                PitwallIconButton(
-                    iconRes = R.drawable.ic_search,
-                    contentDescription = searchLabel,
-                    // Left goes back to the selected tab rather than onto the other one, which would switch tabs
-                    modifier = Modifier
-                        .upButton(0)
-                        .focusProperties { left = if (tab == LauncherTab.FAVORITES) favoritesTabFocus else allAppsTabFocus },
-                    onClick = { open(context.keyboardSearchIntent(), searchLabel) }
-                )
-                PitwallIconButton(
-                    iconRes = R.drawable.ic_mic,
-                    contentDescription = voiceLabel,
-                    modifier = Modifier.upButton(1),
-                    onClick = { open(context.voiceSearchIntent(), voiceLabel) }
-                )
-                PitwallIconButton(
-                    iconRes = R.drawable.ic_input,
-                    contentDescription = inputsLabel,
-                    modifier = Modifier.upButton(2),
-                    onClick = { open(context.inputsIntent(), inputsLabel) }
-                )
-                PitwallIconButton(
-                    iconRes = network.iconRes,
-                    contentDescription = networkDescription(network),
-                    modifier = Modifier.upButton(3),
-                    onClick = { open(context.wifiSettingsIntent(), networkLabel) }
-                )
-                PitwallIconButton(
-                    iconRes = R.drawable.ic_settings,
-                    contentDescription = stringResource(R.string.settings_title),
-                    modifier = Modifier.upButton(4),
-                    onClick = onOpenSettings
-                )
+                actions.forEachIndexed { index, action ->
+                    PitwallIconButton(
+                        iconRes = action.iconRes,
+                        contentDescription = action.contentDescription,
+                        cardOpacity = display.cardOpacity,
+                        modifier = Modifier
+                            .focusRequester(buttonFocus[index])
+                            .upTarget("button$index") { buttonFocus[index].requestFocus() }
+                            .let { mod ->
+                                // Left from the first button goes back to the selected tab rather than switching tabs
+                                if (index == 0) mod.focusProperties { left = tabFocus(tab) } else mod
+                            },
+                        onClick = action.onClick
+                    )
+                }
             }
         }
     ) { measurables, constraints ->
@@ -185,17 +198,6 @@ internal fun TopBar(
 private val TOP_BAR_GAP = 24.dp
 
 @Composable
-internal fun rememberNetworkStatus(): State<NetworkStatus> {
-    val context = LocalContext.current
-    return produceState<NetworkStatus>(NetworkStatus.read(context)) {
-        while (true) {
-            value = NetworkStatus.read(context)
-            delay(5_000L)
-        }
-    }
-}
-
-@Composable
 internal fun networkDescription(status: NetworkStatus): String = when (status) {
     NetworkStatus.Offline -> stringResource(R.string.net_offline)
     NetworkStatus.Ethernet -> stringResource(R.string.net_ethernet)
@@ -204,17 +206,74 @@ internal fun networkDescription(status: NetworkStatus): String = when (status) {
 
 /** Time in the TV's 12/24-hour setting, the weekday and date underneath, then Pitwall's accent bar. */
 @Composable
-private fun Clock(weather: WeatherNow?, temperatureUnit: TempUnit, clockFormat: ClockFormat, modifier: Modifier = Modifier) {
+private fun Clock(
+    weather: WeatherNow?,
+    temperatureUnit: TempUnit,
+    clockFormat: ClockFormat,
+    cardOpacity: CardOpacity,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val palette = LocalPalette.current
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
-    val now by produceState(System.currentTimeMillis()) {
-        while (true) {
-            value = System.currentTimeMillis()
-            delay(60_000L - value % 60_000L)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
+    val clockLabel = stringResource(R.string.cd_clock_weather)
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    var tvIs24Hour by remember { mutableStateOf(DateFormat.is24HourFormat(context)) }
+    DisposableEffect(lifecycleOwner, context) {
+        val updateTime = {
+            now = System.currentTimeMillis()
+            tvIs24Hour = DateFormat.is24HourFormat(context)
+        }
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(c: Context, intent: Intent) {
+                updateTime()
+            }
+        }
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_TICK)
+            addAction(Intent.ACTION_TIME_CHANGED)
+            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        }
+        var registered = false
+        val register = {
+            if (!registered) {
+                runCatching {
+                    ContextCompat.registerReceiver(context, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+                    registered = true
+                }
+            }
+        }
+        val unregister = {
+            if (registered) {
+                runCatching { context.unregisterReceiver(receiver) }
+                registered = false
+            }
+        }
+        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            updateTime()
+            register()
+        }
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    updateTime()
+                    register()
+                }
+                Lifecycle.Event.ON_STOP -> unregister()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            unregister()
         }
     }
-    val is24Hour = clockFormat.is24Hour(DateFormat.is24HourFormat(context))
+    val is24Hour = clockFormat.is24Hour(tvIs24Hour)
     val timeFormat = remember(locale, is24Hour) {
         SimpleDateFormat(DateFormat.getBestDateTimePattern(locale, if (is24Hour) "Hm" else "hm"), locale)
     }
@@ -226,7 +285,10 @@ private fun Clock(weather: WeatherNow?, temperatureUnit: TempUnit, clockFormat: 
     Column(
         modifier = modifier
             .clip(Corners.medium)
-            .background(palette.card)
+            .background(if (isFocused) palette.cardFocused else palette.card.copy(alpha = cardOpacity.alpha))
+            .then(if (isFocused) Modifier.border(2.dp, palette.accent, Corners.medium) else Modifier)
+            .semantics { contentDescription = clockLabel }
+            .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 10.dp)
             .width(IntrinsicSize.Max)
             // A long place name is cut short rather than pushing into the tabs
@@ -295,6 +357,7 @@ private fun Clock(weather: WeatherNow?, temperatureUnit: TempUnit, clockFormat: 
 private fun PitwallIconButton(
     @DrawableRes iconRes: Int,
     contentDescription: String,
+    cardOpacity: CardOpacity = CardOpacity.SOLID,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -306,7 +369,7 @@ private fun PitwallIconButton(
         modifier = modifier
             .size(48.dp)
             .clip(shape)
-            .background(if (isFocused) palette.focus else palette.card)
+            .background(if (isFocused) palette.focus else palette.card.copy(alpha = cardOpacity.alpha))
             .then(if (isFocused) Modifier.border(3.dp, palette.focus, shape) else Modifier)
             .semantics { this.contentDescription = contentDescription }
             .clickable(interactionSource = interactionSource, indication = null, onClick = onClick),
@@ -327,25 +390,30 @@ private fun PitwallIconButton(
  */
 @Composable
 private fun TabBar(
-    tab: LauncherTab,
-    onSelectTab: (LauncherTab) -> Unit,
-    favoritesTabFocus: FocusRequester,
-    allAppsTabFocus: FocusRequester,
+    tab: HomeTab,
+    categories: List<AppCategory>,
+    onSelectTab: (HomeTab) -> Unit,
+    tabFocus: (HomeTab) -> FocusRequester,
+    cardOpacity: CardOpacity,
     modifier: Modifier = Modifier
 ) {
     val palette = LocalPalette.current
     val density = LocalDensity.current
     // Where each tab sits inside the bar, measured once laid out
-    val bounds = remember { mutableStateMapOf<LauncherTab, Pair<Dp, Dp>>() }
+    val bounds = remember(categories) { mutableStateMapOf<HomeTab, Pair<Dp, Dp>>() }
     val (selectedX, selectedWidth) = bounds[tab] ?: (0.dp to 0.dp)
     val indicatorSpec = spring<Dp>(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessMediumLow)
     val x by animateDpAsState(selectedX, indicatorSpec, label = "tabX")
     val width by animateDpAsState(selectedWidth, indicatorSpec, label = "tabWidth")
+    val tabs = listOf(
+        HomeTab.Favorites to stringResource(R.string.tab_favorites),
+        HomeTab.AllApps to stringResource(R.string.tab_all_apps)
+    ) + categories.map { HomeTab.Category(it.id) to it.name }
 
     Box(
         modifier = modifier
             .clip(Corners.medium)
-            .background(palette.card)
+            .background(palette.card.copy(alpha = cardOpacity.alpha))
             .padding(6.dp)
     ) {
         if (selectedWidth > 0.dp) {
@@ -367,15 +435,12 @@ private fun TabBar(
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            listOf(
-                Triple(LauncherTab.FAVORITES, R.string.tab_favorites, favoritesTabFocus),
-                Triple(LauncherTab.ALL_APPS, R.string.tab_all_apps, allAppsTabFocus)
-            ).forEach { (which, labelRes, focus) ->
+            tabs.forEach { (which, label) ->
                 TabChip(
-                    text = stringResource(labelRes),
+                    text = label,
                     selected = tab == which,
                     modifier = Modifier
-                        .focusRequester(focus)
+                        .focusRequester(tabFocus(which))
                         .onPlaced {
                             bounds[which] = with(density) { it.positionInParent().x.toDp() to it.size.width.toDp() }
                         },
@@ -548,6 +613,8 @@ internal fun AppCard(
     art: AppArt?,
     isFavorite: Boolean,
     modifier: Modifier = Modifier,
+    isLocked: Boolean = false,
+    cardOpacity: CardOpacity = CardOpacity.SOLID,
     focusedScale: Float = 1.08f,
     unfocusedAlpha: Float = 1f,
     onFocused: () -> Unit = {},
@@ -584,6 +651,7 @@ internal fun AppCard(
     val alpha by animateFloatAsState(if (isFocused) 1f else unfocusedAlpha, label = "cardAlpha")
     val shape = Corners.large
     val favoriteLabel = stringResource(R.string.favorite_badge)
+    val lockedLabel = stringResource(R.string.cd_app_locked)
 
     Column(
         modifier = modifier
@@ -603,7 +671,7 @@ internal fun AppCard(
             .tvKeys(onClick, onLongClick, onUp?.let { up -> { up(centerX) } }, onMoveKey, onMoveDone)
             .shadow(if (isMoving) 24.dp else if (isFocused) 12.dp else 0.dp, shape)
             .clip(shape)
-            .background(if (isFocused || isMoving) palette.cardFocused else palette.card)
+            .background(if (isFocused || isMoving) palette.cardFocused else palette.card.copy(alpha = cardOpacity.alpha))
             .then(
                 when {
                     isMoving -> Modifier.border(4.dp, backdrop.accent, shape)
@@ -617,6 +685,25 @@ internal fun AppCard(
     ) {
         Box {
             CardArt(entry, art, logoSize = 52.dp, modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f))
+            if (isLocked) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                        .size(22.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xB3111318))
+                        .semantics { contentDescription = lockedLabel },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_lock),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(13.dp)
+                    )
+                }
+            }
             if (isFavorite) {
                 Box(
                     modifier = Modifier

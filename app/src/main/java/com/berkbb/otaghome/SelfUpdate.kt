@@ -51,6 +51,31 @@ sealed interface UpdateInstall {
     data class Failed(@param:StringRes val messageRes: Int) : UpdateInstall
 }
 
+/** How often OtagHome automatically checks GitHub for a newer release while on the home screen. */
+enum class UpdateCheckInterval(@param:StringRes val labelRes: Int, val millis: Long) {
+    OFF(R.string.rotation_off, 0L),
+    DAILY(R.string.rotation_daily, 86_400_000L),
+    WEEKLY(R.string.update_weekly, 7 * 86_400_000L);
+
+    fun next(): UpdateCheckInterval = entries[(ordinal + 1) % entries.size]
+
+    companion object {
+        fun fromName(name: String?): UpdateCheckInterval = entries.firstOrNull { it.name == name } ?: OFF
+    }
+}
+
+/** Scheduling helpers for optional background update checks and one-time footer notices. */
+object UpdateSchedule {
+    fun shouldCheck(interval: UpdateCheckInterval, lastCheckedMillis: Long, nowMillis: Long): Boolean {
+        if (interval == UpdateCheckInterval.OFF) return false
+        if (lastCheckedMillis <= 0L || nowMillis < lastCheckedMillis) return true
+        return nowMillis - lastCheckedMillis >= interval.millis
+    }
+
+    fun shouldNotify(latestVersion: String, lastNotifiedVersion: String?): Boolean =
+        latestVersion.isNotBlank() && latestVersion != lastNotifiedVersion
+}
+
 /** The pure parts of the update check, apart from the network so they can be tested. */
 object ReleaseParser {
     private val VERSION = Regex("""^v?(\d+(?:\.\d+)*)""")
@@ -197,6 +222,18 @@ object SelfUpdate {
         return digest.digest().joinToString("") { "%02x".format(it) }
     }
 
+    /** Deletes downloaded update APKs and unfinished partial files from [cacheDir]. */
+    fun cleanCachedApks(cacheDir: File) {
+        runCatching {
+            cacheDir.listFiles()?.forEach { file ->
+                if (file.isFile && file.name.startsWith("otaghome-") &&
+                    (file.name.endsWith(".apk") || file.name.endsWith(".apk.part"))) {
+                    file.delete()
+                }
+            }
+        }
+    }
+
     /** Hands the APK to the system installer; the TV shows its confirmation. */
     fun install(context: Context, apk: File): Boolean {
         val installer = context.packageManager.packageInstaller
@@ -261,6 +298,7 @@ class SelfUpdateRestartReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) return
+        SelfUpdate.cleanCachedApks(context.cacheDir)
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         if (!prefs.getBoolean(KEY_PENDING, false)) return
         prefs.edit().remove(KEY_PENDING).apply()

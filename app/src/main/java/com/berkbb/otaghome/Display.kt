@@ -1,10 +1,39 @@
 package com.berkbb.otaghome
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Environment
 import androidx.annotation.StringRes
 import org.json.JSONObject
+import java.io.File
 
-/** The two tabs of the home screen. */
-enum class LauncherTab { FAVORITES, ALL_APPS }
+/** The two built-in tabs stored by legacy preferences. */
+enum class LauncherTab {
+    FAVORITES, ALL_APPS;
+
+    fun other(): LauncherTab = if (this == FAVORITES) ALL_APPS else FAVORITES
+}
+
+/** Active tab on the home screen: Favorites, All apps or a user-defined category. */
+sealed interface HomeTab {
+    data object Favorites : HomeTab
+    data object AllApps : HomeTab
+    data class Category(val id: String) : HomeTab
+}
+
+/** Opacity of unfocused launcher cards and top-bar pills over the backdrop. */
+enum class CardOpacity(@param:StringRes val labelRes: Int, val alpha: Float) {
+    SOLID(R.string.opacity_solid, 1f),
+    TRANSLUCENT(R.string.opacity_translucent, 0.72f),
+    GLASS(R.string.opacity_glass, 0.45f);
+
+    fun next(): CardOpacity = entries[(ordinal + 1) % entries.size]
+
+    companion object {
+        fun fromName(name: String?): CardOpacity = entries.firstOrNull { it.name == name } ?: SOLID
+    }
+}
 
 /** Clock format: the TV's own setting, or always 24-hour or 12-hour. */
 enum class ClockFormat(@param:StringRes val labelRes: Int) {
@@ -70,7 +99,11 @@ enum class StartTab(@param:StringRes val labelRes: Int) {
 object Backup {
     private const val FORMAT = "otaghome-backup"
     private const val VERSION = 1
-    private val SKIPPED_KEYS = setOf("weather_cache")
+    private val SKIPPED_KEYS = setOf(
+        "weather_cache", "last_launched", "bg_rotation_day",
+        "custom_art", "pin_hash", "pin_salt", "lock_settings", "locked_apps",
+        "update_last_checked", "update_last_notified"
+    )
 
     fun encode(prefs: Map<String, *>): String {
         val values = JSONObject()
@@ -112,3 +145,36 @@ object Backup {
     private fun portable(key: String, value: Any?): Boolean =
         !(key == "background" && value is String && value.startsWith("image|"))
 }
+
+/** Remote paging, digit-shortcut and tab-cycling helpers. */
+object RemoteNavigation {
+    fun pageJumpIndex(currentIndex: Int, totalCount: Int, columns: Int, forward: Boolean, pageRows: Int = 2): Int {
+        if (totalCount <= 0) return -1
+        val start = currentIndex.coerceIn(0, totalCount - 1)
+        val step = maxOf(1, columns * pageRows)
+        return (if (forward) start + step else start - step).coerceIn(0, totalCount - 1)
+    }
+
+    fun favoriteIndexForDigit(digit: Int, favoriteCount: Int): Int =
+        if (digit in 1..9 && digit - 1 < favoriteCount) digit - 1 else -1
+
+    fun nextTab(current: HomeTab, categoryIds: List<String>, forward: Boolean): HomeTab {
+        val tabs = listOf(HomeTab.Favorites, HomeTab.AllApps) + categoryIds.map(HomeTab::Category)
+        val index = tabs.indexOf(current).let { if (it < 0) 0 else it }
+        val step = if (forward) 1 else -1
+        return tabs[Math.floorMod(index + step, tabs.size)]
+    }
+}
+
+/** True when this TV has a real SAF document picker (not Google's stub). */
+internal fun Context.hasDocumentPicker(action: String, mimeType: String): Boolean {
+    val intent = Intent(action).addCategory(Intent.CATEGORY_OPENABLE).setType(mimeType)
+    val handler = runCatching {
+        packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
+    }.getOrNull()
+    return HomeOverride.isRealScreen(handler)
+}
+
+/** Local backup location for TVs without a SAF document picker. */
+internal fun Context.localBackupFile(): File =
+    File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) ?: filesDir, "otaghome-backup.json")

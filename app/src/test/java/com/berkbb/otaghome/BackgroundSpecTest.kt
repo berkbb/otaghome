@@ -1,7 +1,9 @@
 package com.berkbb.otaghome
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BackgroundSpecTest {
@@ -72,5 +74,24 @@ class BackgroundSpecTest {
     fun gradientDirectionCycles() {
         assertEquals(GradientDirection.HORIZONTAL, GradientDirection.VERTICAL.next())
         assertEquals(GradientDirection.VERTICAL, GradientDirection.DIAGONAL.next())
+    }
+
+    @Test
+    fun presetRotationCyclesAndAdvancesThroughPresets() {
+        assertEquals(PresetRotation.DAILY, PresetRotation.OFF.next())
+        assertEquals(PresetRotation.ON_LAUNCH, PresetRotation.DAILY.next())
+        assertEquals(PresetRotation.OFF, PresetRotation.ON_LAUNCH.next())
+        assertEquals(PresetRotation.OFF, PresetRotation.fromName("UNKNOWN"))
+
+        val pool = listOf(PresetImage.OTAG, PresetImage.AURORA, PresetImage.SUNSET)
+        assertEquals(PresetImage.AURORA, PresetRotator.next(PresetImage.OTAG, pool))
+        assertEquals(PresetImage.OTAG, PresetRotator.next(PresetImage.SUNSET, pool))
+        assertEquals(PresetImage.OTAG, PresetRotator.next(PresetImage.FOREST, pool))
+
+        assertTrue(PresetRotator.shouldRotateDaily(lastDay = 20_000L, today = 20_001L))
+        assertFalse(PresetRotator.shouldRotateDaily(lastDay = 20_000L, today = 20_000L))
+        assertFalse(PresetRotator.shouldRotateDaily(lastDay = -1L, today = 20_000L))
+        assertEquals(0L, PresetRotator.localEpochDay(86_399_000L, 0))
+        assertEquals(1L, PresetRotator.localEpochDay(86_399_000L, 3_600_000))
     }
 }

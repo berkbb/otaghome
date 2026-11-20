@@ -51,4 +51,16 @@ object ColorMath {
         val saturation = if (max == 0f) 0f else delta / max
         return Hsv(hue, saturation, max)
     }
+
+    /** Maps a point on the 2D saturation–brightness spectrum (`0f..1f` from top-left) into [Hsv]. */
+    fun fromSpectrumPoint(hue: Float, xFraction: Float, yFraction: Float): Hsv {
+        val h = ((hue % 360f) + 360f) % 360f
+        return Hsv(h, xFraction.coerceIn(0f, 1f), 1f - yFraction.coerceIn(0f, 1f))
+    }
+
+    /** Nudges saturation and brightness inside the 2D spectrum while keeping hue unchanged. */
+    fun stepSpectrum(hsv: Hsv, dSaturation: Float, dValue: Float): Hsv = hsv.copy(
+        saturation = (hsv.saturation + dSaturation).coerceIn(0f, 1f),
+        value = (hsv.value + dValue).coerceIn(0f, 1f)
+    )
 }

@@ -44,19 +44,36 @@ enum class WeatherKind(@param:DrawableRes private val dayIcon: Int, @param:Drawa
 /** A place to show the weather for; [label] is how it reads in a list ("Ankara, Türkiye"). */
 data class Place(val name: String, val latitude: Double, val longitude: Double, val label: String = name)
 
-/** The weather right now at [place], fetched at [fetchedAt] (epoch millis). */
+/** One day of the 5-day forecast shown when clicking the clock / weather card. */
+data class DailyForecast(
+    val dateIso: String,
+    val code: Int,
+    val minTemp: Double,
+    val maxTemp: Double
+) {
+    val kind: WeatherKind get() = WeatherKind.fromWmo(code)
+    fun minText(unit: TempUnit): String = WeatherNow.formatTemp(minTemp, unit)
+    fun maxText(unit: TempUnit): String = WeatherNow.formatTemp(maxTemp, unit)
+}
+
+/** The weather right now at [place], fetched at [fetchedAt] (epoch millis), plus optional daily forecast. */
 data class WeatherNow(
     val temperature: Double,
     val code: Int,
     val isDay: Boolean,
     val place: String,
-    val fetchedAt: Long
+    val fetchedAt: Long,
+    val daily: List<DailyForecast> = emptyList()
 ) {
     val kind: WeatherKind get() = WeatherKind.fromWmo(code)
 
     /** "18°" in the chosen [unit], rounded, with a proper minus sign below zero. */
-    fun temperatureText(unit: TempUnit): String =
-        "${Math.round(unit.fromCelsius(temperature)).toString().replace('-', '−')}°"
+    fun temperatureText(unit: TempUnit): String = formatTemp(temperature, unit)
+
+    companion object {
+        fun formatTemp(celsius: Double, unit: TempUnit): String =
+            "${Math.round(unit.fromCelsius(celsius)).toString().replace('-', '−')}°"
+    }
 }
 
 /** The unit the temperature is shown in; Open-Meteo always answers in Celsius. */
@@ -116,18 +133,34 @@ object WeatherStore {
         return Place(name, lat, lon, parts.getOrNull(3)?.takeIf { it.isNotBlank() } ?: name)
     }
 
-    fun encodeWeather(now: WeatherNow): String =
-        listOf(now.temperature, now.code, if (now.isDay) 1 else 0, now.place.replace("|", " "), now.fetchedAt).joinToString("|")
+    fun encodeWeather(now: WeatherNow): String {
+        val base = listOf(now.temperature, now.code, if (now.isDay) 1 else 0, now.place.replace("|", " "), now.fetchedAt)
+        val dailyField = now.daily.take(5).joinToString(";") { day ->
+            val cleanDate = day.dateIso.replace("|", "").replace(";", "").replace(",", "")
+            "$cleanDate,${day.code},${day.minTemp},${day.maxTemp}"
+        }
+        return (if (dailyField.isEmpty()) base else base + dailyField).joinToString("|")
+    }
 
     fun decodeWeather(raw: String?): WeatherNow? {
         val p = raw?.split('|') ?: return null
         if (p.size < 5) return null
+        val daily = p.getOrNull(5).orEmpty().split(';').mapNotNull { item ->
+            val cols = item.split(',')
+            if (cols.size < 4) return@mapNotNull null
+            val date = cols[0].takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val code = cols[1].toIntOrNull() ?: return@mapNotNull null
+            val min = cols[2].toDoubleOrNull() ?: return@mapNotNull null
+            val max = cols[3].toDoubleOrNull() ?: return@mapNotNull null
+            DailyForecast(date, code, min, max)
+        }
         return WeatherNow(
             temperature = p[0].toDoubleOrNull() ?: return null,
             code = p[1].toIntOrNull() ?: return null,
             isDay = p[2] == "1",
             place = p[3],
-            fetchedAt = p[4].toLongOrNull() ?: return null
+            fetchedAt = p[4].toLongOrNull() ?: return null,
+            daily = daily
         )
     }
 }
@@ -135,15 +168,35 @@ object WeatherStore {
 /** Reading the services' replies; kept apart from the network so they can be tested. */
 object WeatherParser {
 
-    /** Open-Meteo's forecast reply with `current=temperature_2m,weather_code,is_day`. */
+    /** Open-Meteo's forecast reply with `current=temperature_2m,weather_code,is_day` and optional `daily`. */
     fun forecast(json: String, place: String, now: Long): WeatherNow? = runCatching {
-        val current = JSONObject(json).getJSONObject("current")
+        val root = JSONObject(json)
+        val current = root.getJSONObject("current")
+        val dailyObj = root.optJSONObject("daily")
+        val daily = if (dailyObj != null) {
+            val dates = dailyObj.optJSONArray("time")
+            val codes = dailyObj.optJSONArray("weather_code")
+            val mins = dailyObj.optJSONArray("temperature_2m_min")
+            val maxes = dailyObj.optJSONArray("temperature_2m_max")
+            val count = if (dates != null && codes != null && mins != null && maxes != null) {
+                minOf(5, dates.length(), codes.length(), mins.length(), maxes.length())
+            } else 0
+            (0 until count).map { i ->
+                DailyForecast(
+                    dateIso = dates!!.getString(i),
+                    code = codes!!.getInt(i),
+                    minTemp = mins!!.getDouble(i),
+                    maxTemp = maxes!!.getDouble(i)
+                )
+            }
+        } else emptyList()
         WeatherNow(
             temperature = current.getDouble("temperature_2m"),
             code = current.getInt("weather_code"),
             isDay = current.optInt("is_day", 1) == 1,
             place = place,
-            fetchedAt = now
+            fetchedAt = now,
+            daily = daily
         )
     }.getOrNull()
 
@@ -178,7 +231,7 @@ object WeatherClient {
 
     fun forecastUrl(place: Place): String = String.format(
         Locale.ROOT,
-        "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,is_day&timezone=auto",
+        "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,weather_code,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=5&timezone=auto",
         place.latitude, place.longitude
     )
 

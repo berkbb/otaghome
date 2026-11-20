@@ -64,4 +64,26 @@ class ColorMathTest {
         assertEquals("color_dark_card", ColorRole.CARD.prefKey(isDark = true))
         assertEquals("color_light_text_secondary", ColorRole.TEXT_SECONDARY.prefKey(isDark = false))
     }
+
+    @Test
+    fun spectrumPointMapsCornersClampsAndWrapsHue() {
+        assertEquals(0xFFFFFFFF.toInt(), ColorMath.toRgb(ColorMath.fromSpectrumPoint(210f, 0f, 0f)))
+        assertEquals(0xFFFF0000.toInt(), ColorMath.toRgb(ColorMath.fromSpectrumPoint(0f, 1f, 0f)))
+        assertEquals(0xFF000000.toInt(), ColorMath.toRgb(ColorMath.fromSpectrumPoint(120f, 0f, 1f)))
+        assertEquals(0xFF000000.toInt(), ColorMath.toRgb(ColorMath.fromSpectrumPoint(120f, 1f, 1f)))
+
+        val mid = ColorMath.fromSpectrumPoint(240f, 0.5f, 0.5f)
+        assertEquals(Hsv(240f, 0.5f, 0.5f), mid)
+
+        assertEquals(Hsv(330f, 0f, 0f), ColorMath.fromSpectrumPoint(-30f, -0.2f, 1.5f))
+        assertEquals(Hsv(30f, 1f, 1f), ColorMath.fromSpectrumPoint(390f, 1.4f, -0.1f))
+    }
+
+    @Test
+    fun spectrumStepMovesWithinBoundsAndKeepsHue() {
+        val start = Hsv(185f, 0.5f, 0.4f)
+        assertEquals(Hsv(185f, 0.6f, 0.55f), ColorMath.stepSpectrum(start, 0.1f, 0.15f))
+        assertEquals(Hsv(185f, 1f, 0f), ColorMath.stepSpectrum(start, 0.9f, -0.8f))
+        assertEquals(Hsv(185f, 0f, 1f), ColorMath.stepSpectrum(start, -0.9f, 0.9f))
+    }
 }

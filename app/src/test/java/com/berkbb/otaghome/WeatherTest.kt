@@ -91,6 +91,31 @@ class WeatherTest {
         val url = WeatherClient.searchUrl("Kahramanmaraş", "de")
         assertTrue(url, url.contains("language=de"))
         assertTrue(url, url.contains("name=Kahramanmara%C5%9F"))
-        assertTrue(WeatherClient.forecastUrl(Place("Ankara", 39.92, 32.85)).contains("latitude=39.9200&longitude=32.8500"))
+        val forecast = WeatherClient.forecastUrl(Place("Ankara", 39.92, 32.85))
+        assertTrue(forecast.contains("latitude=39.9200&longitude=32.8500"))
+        assertTrue(forecast.contains("daily=weather_code,temperature_2m_max,temperature_2m_min"))
+        assertTrue(forecast.contains("forecast_days=5"))
+    }
+
+    @Test
+    fun dailyForecastParsesAndRoundTripsAlongsideLegacyWeatherCache() {
+        val json = """{
+            "current":{"temperature_2m":15.2,"weather_code":1,"is_day":1},
+            "daily":{
+                "time":["2026-11-20","2026-11-21"],
+                "weather_code":[0,61],
+                "temperature_2m_min":[4.1,-1.6],
+                "temperature_2m_max":[17.4,8.2]
+            }
+        }"""
+        val parsed = WeatherParser.forecast(json, "Ankara", 100L)!!
+        assertEquals(2, parsed.daily.size)
+        assertEquals(WeatherKind.CLEAR, parsed.daily[0].kind)
+        assertEquals("−2°", parsed.daily[1].minText(TempUnit.CELSIUS))
+        assertEquals("17°", parsed.daily[0].maxText(TempUnit.CELSIUS))
+        assertEquals(parsed, WeatherStore.decodeWeather(WeatherStore.encodeWeather(parsed)))
+
+        val legacy = WeatherStore.decodeWeather("12.0|3|1|Ankara|99")!!
+        assertTrue(legacy.daily.isEmpty())
     }
 }

@@ -100,4 +100,16 @@ class SelfUpdateDownloadTest {
         assertEquals(listOf(pageUrl), network.urls)
         assertEquals(sha, SelfUpdate.sha256Of(target))
     }
+
+    @Test
+    fun cachedUpdateApksAreCleanedWhileOtherFilesRemain() {
+        val cache = folder.newFolder()
+        val oldApk = cache.resolve("otaghome-v1.0.3.apk").apply { writeText("apk") }
+        val partialApk = cache.resolve("otaghome-v1.0.4.apk.part").apply { writeText("part") }
+        val otherFile = cache.resolve("other-cache.json").apply { writeText("{}") }
+        SelfUpdate.cleanCachedApks(cache)
+        assertFalse(oldApk.exists())
+        assertFalse(partialApk.exists())
+        assertTrue(otherFile.exists())
+    }
 }

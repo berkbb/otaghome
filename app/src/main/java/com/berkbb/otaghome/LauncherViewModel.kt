@@ -5,9 +5,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.LauncherApps
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
+import android.os.UserHandle
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.content.edit
@@ -40,7 +44,11 @@ data class LauncherUiState(
     val favoritesSort: SortMode = SortMode.CUSTOM,
     val appsSort: SortMode = SortMode.CUSTOM,
     /** Apps the user hid; they show nowhere until shown again from Settings. */
-    val hidden: List<String> = emptyList()
+    val hidden: List<String> = emptyList(),
+    val lastLaunched: Map<String, Long> = emptyMap(),
+    val customLabels: Map<String, String> = emptyMap(),
+    val categories: List<AppCategory> = emptyList(),
+    val customArt: Map<String, String> = emptyMap()
 )
 
 /** How the home screen looks and opens. */
@@ -49,7 +57,15 @@ data class DisplaySettings(
     val cardSize: CardSize = CardSize.NORMAL,
     val showNames: Boolean = true,
     val startTab: StartTab = StartTab.AUTO,
-    val lastTab: LauncherTab? = null
+    val lastTab: LauncherTab? = null,
+    val mediaControls: Boolean = true,
+    val cardOpacity: CardOpacity = CardOpacity.SOLID,
+    val numberShortcuts: Boolean = true,
+    val showSearch: Boolean = true,
+    val showVoiceSearch: Boolean = true,
+    val showInputs: Boolean = true,
+    val showNetwork: Boolean = true,
+    val autoUpdateInterval: UpdateCheckInterval = UpdateCheckInterval.OFF
 )
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
@@ -73,6 +89,24 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         private const val KEY_SHOW_NAMES = "show_names"
         private const val KEY_START_TAB = "start_tab"
         private const val KEY_LAST_TAB = "last_tab"
+        private const val KEY_MEDIA_CONTROLS = "media_controls"
+        private const val KEY_CARD_OPACITY = "card_opacity"
+        private const val KEY_NUMBER_SHORTCUTS = "number_shortcuts"
+        private const val KEY_SHOW_SEARCH = "show_search"
+        private const val KEY_SHOW_VOICE_SEARCH = "show_voice_search"
+        private const val KEY_SHOW_INPUTS = "show_inputs"
+        private const val KEY_SHOW_NETWORK = "show_network"
+        private const val KEY_AUTO_UPDATE_INTERVAL = "auto_update_interval"
+        private const val KEY_UPDATE_LAST_CHECKED = "update_last_checked"
+        private const val KEY_UPDATE_LAST_NOTIFIED = "update_last_notified"
+        private const val KEY_LAST_LAUNCHED = "last_launched"
+        private const val KEY_CUSTOM_LABELS = "custom_labels"
+        private const val KEY_CATEGORIES = "categories"
+        private const val KEY_CUSTOM_ART = "custom_art"
+        private const val KEY_PIN_HASH = "pin_hash"
+        private const val KEY_PIN_SALT = "pin_salt"
+        private const val KEY_LOCK_SETTINGS = "lock_settings"
+        private const val KEY_LOCKED_APPS = "locked_apps"
         // Banners are 16:9 (320×180 dp in the platform guidelines); icons are drawn at most 96 dp
         private const val BANNER_WIDTH_PX = 480
         private const val BANNER_HEIGHT_PX = 270
@@ -86,7 +120,11 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         systemApps = SystemAppsMode.fromName(prefs.getString(KEY_SYSTEM_APPS, null)),
         favoritesSort = SortMode.fromName(prefs.getString(KEY_FAVORITES_SORT, null)),
         appsSort = SortMode.fromName(prefs.getString(KEY_APPS_SORT, null)),
-        hidden = AppCatalog.decodePackages(prefs.getString(KEY_HIDDEN, null))
+        hidden = AppCatalog.decodePackages(prefs.getString(KEY_HIDDEN, null)),
+        lastLaunched = AppCatalog.decodeTimestamps(prefs.getString(KEY_LAST_LAUNCHED, null)),
+        customLabels = AppCatalog.decodeCustomLabels(prefs.getString(KEY_CUSTOM_LABELS, null)),
+        categories = AppCatalog.decodeCategories(prefs.getString(KEY_CATEGORIES, null)),
+        customArt = AppCatalog.decodeCustomArt(prefs.getString(KEY_CUSTOM_ART, null))
     )
 
     private fun readWeatherSettings() = WeatherSettings(
@@ -102,15 +140,43 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         cardSize = CardSize.fromName(prefs.getString(KEY_CARD_SIZE, null)),
         showNames = prefs.getBoolean(KEY_SHOW_NAMES, true),
         startTab = StartTab.fromName(prefs.getString(KEY_START_TAB, null)),
-        lastTab = LauncherTab.entries.firstOrNull { it.name == prefs.getString(KEY_LAST_TAB, null) }
+        lastTab = LauncherTab.entries.firstOrNull { it.name == prefs.getString(KEY_LAST_TAB, null) },
+        mediaControls = prefs.getBoolean(KEY_MEDIA_CONTROLS, true),
+        cardOpacity = CardOpacity.fromName(prefs.getString(KEY_CARD_OPACITY, null)),
+        numberShortcuts = prefs.getBoolean(KEY_NUMBER_SHORTCUTS, true),
+        showSearch = prefs.getBoolean(KEY_SHOW_SEARCH, true),
+        showVoiceSearch = prefs.getBoolean(KEY_SHOW_VOICE_SEARCH, true),
+        showInputs = prefs.getBoolean(KEY_SHOW_INPUTS, true),
+        showNetwork = prefs.getBoolean(KEY_SHOW_NETWORK, true),
+        autoUpdateInterval = UpdateCheckInterval.fromName(prefs.getString(KEY_AUTO_UPDATE_INTERVAL, null))
+    )
+
+    private fun readLockSettings() = LockSettings(
+        pinHash = prefs.getString(KEY_PIN_HASH, null),
+        pinSalt = prefs.getString(KEY_PIN_SALT, null),
+        lockSettings = prefs.getBoolean(KEY_LOCK_SETTINGS, false),
+        lockedApps = AppCatalog.decodePackages(prefs.getString(KEY_LOCKED_APPS, null)).toSet()
     )
 
     private val _uiState = MutableStateFlow(readUiPrefs(LauncherUiState()))
     val uiState: StateFlow<LauncherUiState> = _uiState.asStateFlow()
 
+    private val _lockSettings = MutableStateFlow(readLockSettings())
+    val lockSettings: StateFlow<LockSettings> = _lockSettings.asStateFlow()
+
     private var loadJob: Job? = null
+    private var pendingRefresh = false
     /** Package → activity and last update time the current art was rendered for. */
     private var artStamps: Map<String, String> = emptyMap()
+    private val launcherApps = application.getSystemService(LauncherApps::class.java)
+    private var launcherCallbackRegistered = false
+    private val packageCallback = object : LauncherApps.Callback() {
+        override fun onPackageRemoved(packageName: String, user: UserHandle) = refreshApps()
+        override fun onPackageAdded(packageName: String, user: UserHandle) = refreshApps()
+        override fun onPackageChanged(packageName: String, user: UserHandle) = refreshApps()
+        override fun onPackagesAvailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = refreshApps()
+        override fun onPackagesUnavailable(packageNames: Array<out String>, user: UserHandle, replacing: Boolean) = refreshApps()
+    }
 
     private val _weatherSettings = MutableStateFlow(readWeatherSettings())
     val weatherSettings: StateFlow<WeatherSettings> = _weatherSettings.asStateFlow()
@@ -185,16 +251,42 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         refreshWeather(force = placeChanged)
     }
 
-    /** Re-reads the installed apps; called on every resume so installs and removals show up. */
+    /** Re-reads the installed apps and refreshes status monitors on resume. */
     fun refresh() {
-        if (loadJob?.isActive == true) return
+        mediaMonitor.refresh()
+        networkMonitor.refresh()
+        refreshApps()
+    }
+
+    private fun refreshApps() {
+        if (loadJob?.isActive == true) {
+            pendingRefresh = true
+            return
+        }
+        pendingRefresh = false
         val previousArt = _uiState.value.art
         val previousStamps = artStamps
         loadJob = viewModelScope.launch {
             val (apps, loaded) = withContext(Dispatchers.IO) { loadApps(previousArt, previousStamps) }
             artStamps = loaded.stamps
             _uiState.update { it.copy(isLoading = false, apps = apps, art = loaded.art) }
+            if (pendingRefresh) {
+                pendingRefresh = false
+                refreshApps()
+            }
         }
+    }
+
+    private val mediaMonitor = NowPlayingMonitor(application)
+    val nowPlaying: StateFlow<NowPlaying?> = mediaMonitor.state
+    val hasMediaAccess: StateFlow<Boolean> = mediaMonitor.hasAccess
+
+    private val networkMonitor = NetworkMonitor(application)
+    val networkStatus: StateFlow<NetworkStatus> = networkMonitor.status
+
+    fun setScreenActive(active: Boolean) {
+        networkMonitor.setActive(active)
+        mediaMonitor.setForeground(active)
     }
 
     private val _display = MutableStateFlow(readDisplay())
@@ -209,6 +301,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             putBoolean(KEY_SHOW_NAMES, next.showNames)
             putString(KEY_START_TAB, next.startTab.name)
             next.lastTab?.let { putString(KEY_LAST_TAB, it.name) }
+            putBoolean(KEY_MEDIA_CONTROLS, next.mediaControls)
+            putString(KEY_CARD_OPACITY, next.cardOpacity.name)
+            putBoolean(KEY_NUMBER_SHORTCUTS, next.numberShortcuts)
+            putBoolean(KEY_SHOW_SEARCH, next.showSearch)
+            putBoolean(KEY_SHOW_VOICE_SEARCH, next.showVoiceSearch)
+            putBoolean(KEY_SHOW_INPUTS, next.showInputs)
+            putBoolean(KEY_SHOW_NETWORK, next.showNetwork)
+            putString(KEY_AUTO_UPDATE_INTERVAL, next.autoUpdateInterval.name)
         }
     }
 
@@ -216,6 +316,27 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     fun cycleCardSize() = updateDisplay { it.copy(cardSize = it.cardSize.next()) }
     fun toggleShowNames() = updateDisplay { it.copy(showNames = !it.showNames) }
     fun cycleStartTab() = updateDisplay { it.copy(startTab = it.startTab.next()) }
+    fun cycleCardOpacity() = updateDisplay { it.copy(cardOpacity = it.cardOpacity.next()) }
+    fun toggleNumberShortcuts() = updateDisplay { it.copy(numberShortcuts = !it.numberShortcuts) }
+    fun toggleShowSearch() = updateDisplay { it.copy(showSearch = !it.showSearch) }
+    fun toggleShowVoiceSearch() = updateDisplay { it.copy(showVoiceSearch = !it.showVoiceSearch) }
+    fun toggleShowInputs() = updateDisplay { it.copy(showInputs = !it.showInputs) }
+    fun toggleShowNetwork() = updateDisplay { it.copy(showNetwork = !it.showNetwork) }
+    fun cycleAutoUpdateInterval() = updateDisplay { it.copy(autoUpdateInterval = it.autoUpdateInterval.next()) }
+
+    fun setMediaControls(enabled: Boolean) {
+        updateDisplay { it.copy(mediaControls = enabled) }
+        mediaMonitor.setEnabled(enabled)
+    }
+
+    fun refreshMedia() = mediaMonitor.refresh()
+    fun mediaPlayPause() = mediaMonitor.togglePlayPause()
+    fun mediaPrevious() = mediaMonitor.skipPrevious()
+    fun mediaNext() = mediaMonitor.skipNext()
+    fun mediaSwitchSession() = mediaMonitor.switchSession()
+    fun mediaToggleMute() = mediaMonitor.toggleMute()
+    fun mediaStopOrDismiss() = mediaMonitor.stopOrDismiss()
+    fun mediaOpenApp(): Boolean = mediaMonitor.openApp()
 
     /** Remembered for the "last used" start tab. */
     fun rememberTab(tab: LauncherTab) {
@@ -251,24 +372,69 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 }
             }
         }
+        getApplication<Application>().clearInternalImageCaches()
         _uiState.update { readUiPrefs(it) }
         _weatherSettings.value = readWeatherSettings()
         _weather.value = null
         autoPlace = null
         _display.value = readDisplay()
+        _lockSettings.value = readLockSettings()
+        _autoUpdateNotice.value = null
+        mediaMonitor.setEnabled(_display.value.mediaControls)
+        mediaMonitor.refresh()
         refreshWeather(force = true)
         return true
+    }
+
+    /** Wipes every preference and internal cached cover/image, returning the launcher to defaults. */
+    fun resetAllSettings() {
+        prefs.edit(commit = true) { clear() }
+        getApplication<Application>().clearInternalImageCaches()
+        _uiState.update { readUiPrefs(it) }
+        _weatherSettings.value = readWeatherSettings()
+        _weather.value = null
+        autoPlace = null
+        _display.value = readDisplay()
+        _lockSettings.value = readLockSettings()
+        _autoUpdateNotice.value = null
+        mediaMonitor.setEnabled(_display.value.mediaControls)
+        mediaMonitor.refresh()
+        refreshApps()
     }
 
     private val _update = MutableStateFlow<UpdateStatus>(UpdateStatus.Idle)
     val update: StateFlow<UpdateStatus> = _update.asStateFlow()
     private val _updateInstall = MutableStateFlow<UpdateInstall>(UpdateInstall.Idle)
     val updateInstall: StateFlow<UpdateInstall> = _updateInstall.asStateFlow()
+    private val _autoUpdateNotice = MutableStateFlow<String?>(null)
+    val autoUpdateNotice: StateFlow<String?> = _autoUpdateNotice.asStateFlow()
+    private var autoCheckJob: Job? = null
 
     init {
+        mediaMonitor.setEnabled(_display.value.mediaControls)
+        runCatching {
+            launcherApps?.registerCallback(packageCallback, Handler(Looper.getMainLooper()))
+            launcherCallbackRegistered = launcherApps != null
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            SelfUpdate.cleanCachedApks(application.cacheDir)
+        }
+        viewModelScope.launch {
+            MediaListenerService.connected.collect { mediaMonitor.refresh() }
+        }
         viewModelScope.launch {
             InstallFailures.events.collect { _updateInstall.value = UpdateInstall.Failed(R.string.update_install_failed) }
         }
+    }
+
+    override fun onCleared() {
+        if (launcherCallbackRegistered) {
+            runCatching { launcherApps?.unregisterCallback(packageCallback) }
+            launcherCallbackRegistered = false
+        }
+        networkMonitor.clear()
+        mediaMonitor.clear()
+        super.onCleared()
     }
 
     fun checkForUpdates() {
@@ -276,8 +442,34 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _update.value = UpdateStatus.Checking
         _updateInstall.value = UpdateInstall.Idle
         viewModelScope.launch {
-            _update.value = withContext(Dispatchers.IO) { SelfUpdate.check(BuildConfig.VERSION_NAME) }
+            val result = withContext(Dispatchers.IO) { SelfUpdate.check(BuildConfig.VERSION_NAME) }
+            prefs.edit { putLong(KEY_UPDATE_LAST_CHECKED, System.currentTimeMillis()) }
+            _update.value = result
         }
+    }
+
+    /** Optional background check run on start when enabled in Settings → Display. */
+    fun maybeAutoCheckUpdate() {
+        val interval = _display.value.autoUpdateInterval
+        val lastChecked = prefs.getLong(KEY_UPDATE_LAST_CHECKED, 0L)
+        if (!UpdateSchedule.shouldCheck(interval, lastChecked, System.currentTimeMillis())) return
+        if (_update.value == UpdateStatus.Checking || autoCheckJob?.isActive == true) return
+        autoCheckJob = viewModelScope.launch {
+            val status = withContext(Dispatchers.IO) { SelfUpdate.check(BuildConfig.VERSION_NAME) }
+            prefs.edit { putLong(KEY_UPDATE_LAST_CHECKED, System.currentTimeMillis()) }
+            _update.value = status
+            if (status is UpdateStatus.Available) {
+                val lastNotified = prefs.getString(KEY_UPDATE_LAST_NOTIFIED, null)
+                if (UpdateSchedule.shouldNotify(status.latest, lastNotified)) {
+                    prefs.edit { putString(KEY_UPDATE_LAST_NOTIFIED, status.latest) }
+                    _autoUpdateNotice.value = status.latest
+                }
+            }
+        }
+    }
+
+    fun clearAutoUpdateNotice() {
+        _autoUpdateNotice.value = null
     }
 
     /**
@@ -366,13 +558,151 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return updated.indexOf(packageName)
     }
 
+    /** Sets or clears a custom display name for [packageName]. */
+    fun setCustomLabel(packageName: String, label: String?) {
+        val cleaned = label?.replace('\t', ' ')?.replace('\n', ' ')?.replace('\r', ' ')?.trim()?.take(40)
+        val updated = if (cleaned.isNullOrEmpty()) {
+            _uiState.value.customLabels - packageName
+        } else {
+            _uiState.value.customLabels + (packageName to cleaned)
+        }
+        prefs.edit {
+            if (updated.isEmpty()) remove(KEY_CUSTOM_LABELS)
+            else putString(KEY_CUSTOM_LABELS, AppCatalog.encodeCustomLabels(updated))
+        }
+        _uiState.update { it.copy(customLabels = updated) }
+    }
+
+    /** Creates a new user category tab; false when at the limit, blank or duplicate. */
+    fun addCategory(name: String): Boolean {
+        val current = _uiState.value.categories
+        val id = "cat_${System.currentTimeMillis()}_${java.util.UUID.randomUUID().toString().take(4)}"
+        val updated = AppCatalog.addCategory(current, name, id)
+        if (updated == current) return false
+        saveCategories(updated)
+        return true
+    }
+
+    fun renameCategory(id: String, newName: String): Boolean {
+        val current = _uiState.value.categories
+        val updated = AppCatalog.renameCategory(current, id, newName)
+        if (updated == current) return false
+        saveCategories(updated)
+        return true
+    }
+
+    fun deleteCategory(id: String) {
+        val updated = AppCatalog.deleteCategory(_uiState.value.categories, id)
+        saveCategories(updated)
+    }
+
+    fun toggleAppCategory(categoryId: String, packageName: String): Boolean {
+        val updated = AppCatalog.toggleAppInCategory(_uiState.value.categories, categoryId, packageName)
+        saveCategories(updated)
+        return updated.firstOrNull { it.id == categoryId }?.packages?.contains(packageName) == true
+    }
+
+    fun moveInCategory(categoryId: String, packageName: String, delta: Int, shown: List<String>): Int {
+        val (updated, index) = AppCatalog.moveInCategory(_uiState.value.categories, categoryId, packageName, delta, shown)
+        if (index >= 0) saveCategories(updated)
+        return index
+    }
+
+    private fun saveCategories(updated: List<AppCategory>) {
+        prefs.edit {
+            if (updated.isEmpty()) remove(KEY_CATEGORIES)
+            else putString(KEY_CATEGORIES, AppCatalog.encodeCategories(updated))
+        }
+        _uiState.update { it.copy(categories = updated) }
+    }
+
+    /** Assigns a custom 16:9 card cover copied into app storage; returns false if unreadable. */
+    suspend fun setCustomArt(packageName: String, sourceUriString: String): Boolean {
+        val app = getApplication<Application>()
+        val imported = withContext(Dispatchers.IO) { app.importAppCover(packageName, sourceUriString) } ?: return false
+        val previous = _uiState.value.customArt[packageName]
+        val updated = _uiState.value.customArt + (packageName to imported)
+        prefs.edit { putString(KEY_CUSTOM_ART, AppCatalog.encodeCustomArt(updated)) }
+        _uiState.update { it.copy(customArt = updated) }
+        if (previous != null && previous != imported) {
+            withContext(Dispatchers.IO) { app.cleanupCustomAppCover(previous) }
+        }
+        refreshApps()
+        return true
+    }
+
+    /** Restores the app's own banner or icon by removing its custom cover. */
+    fun clearCustomArt(packageName: String) {
+        val app = getApplication<Application>()
+        val previous = _uiState.value.customArt[packageName] ?: return
+        val updated = _uiState.value.customArt - packageName
+        prefs.edit {
+            if (updated.isEmpty()) remove(KEY_CUSTOM_ART)
+            else putString(KEY_CUSTOM_ART, AppCatalog.encodeCustomArt(updated))
+        }
+        _uiState.update { it.copy(customArt = updated) }
+        viewModelScope.launch(Dispatchers.IO) { app.cleanupCustomAppCover(previous) }
+        refreshApps()
+    }
+
+    fun verifyPin(pin: String): Boolean {
+        val current = _lockSettings.value
+        return current.hasPin && PinLock.verify(pin, current.pinSalt!!, current.pinHash!!)
+    }
+
+    fun setPin(pin: String) {
+        if (!PinLock.isValidPin(pin)) return
+        val salt = PinLock.generateSalt()
+        val hash = PinLock.hash(pin, salt)
+        prefs.edit {
+            putString(KEY_PIN_SALT, salt)
+            putString(KEY_PIN_HASH, hash)
+        }
+        _lockSettings.update { it.copy(pinSalt = salt, pinHash = hash) }
+    }
+
+    fun removePin() {
+        prefs.edit {
+            remove(KEY_PIN_HASH)
+            remove(KEY_PIN_SALT)
+            remove(KEY_LOCK_SETTINGS)
+            remove(KEY_LOCKED_APPS)
+        }
+        _lockSettings.value = LockSettings()
+    }
+
+    fun toggleLockSettings() {
+        if (!_lockSettings.value.hasPin) return
+        val next = !_lockSettings.value.lockSettings
+        prefs.edit { putBoolean(KEY_LOCK_SETTINGS, next) }
+        _lockSettings.update { it.copy(lockSettings = next) }
+    }
+
+    fun toggleAppLock(packageName: String): Boolean {
+        val current = _lockSettings.value
+        if (!current.hasPin) return false
+        val nextLocked = if (packageName in current.lockedApps) current.lockedApps - packageName else current.lockedApps + packageName
+        prefs.edit {
+            if (nextLocked.isEmpty()) remove(KEY_LOCKED_APPS)
+            else putString(KEY_LOCKED_APPS, AppCatalog.encodePackages(nextLocked.toList()))
+        }
+        _lockSettings.update { it.copy(lockedApps = nextLocked) }
+        return packageName in nextLocked
+    }
+
     fun launch(entry: AppEntry): Boolean {
         val intent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(if (entry.isTvApp) Intent.CATEGORY_LEANBACK_LAUNCHER else Intent.CATEGORY_LAUNCHER)
             component = ComponentName(entry.packageName, entry.className)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
         }
-        return runCatching { getApplication<Application>().startActivity(intent) }.isSuccess
+        val launched = runCatching { getApplication<Application>().startActivity(intent) }.isSuccess
+        if (launched) {
+            val updated = AppCatalog.recordLaunch(_uiState.value.lastLaunched, entry.packageName, System.currentTimeMillis())
+            prefs.edit { putString(KEY_LAST_LAUNCHED, AppCatalog.encodeTimestamps(updated)) }
+            _uiState.update { it.copy(lastLaunched = updated) }
+        }
+        return launched
     }
 
     private class LoadedArt(val art: Map<String, AppArt>, val stamps: Map<String, String>)
@@ -407,14 +737,23 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             phoneApps = phoneInfos.map { toEntry(it, isTv = false) },
             selfPackage = self
         )
+        val app = getApplication<Application>()
+        val customArtMap = _uiState.value.customArt
         val stamps = apps.associate { entry ->
             val updated = runCatching { pm.getPackageInfo(entry.packageName, 0).lastUpdateTime }.getOrDefault(0L)
-            entry.packageName to "${entry.className}@$updated"
+            val customUri = customArtMap[entry.packageName].orEmpty()
+            entry.packageName to "${entry.className}@$updated|$customUri"
         }
         // A broken drawable from one app must not take the whole launcher down
         val art = apps.associate { entry ->
             val kept = previousArt[entry.packageName]?.takeIf { previousStamps[entry.packageName] == stamps[entry.packageName] }
             if (kept != null) return@associate entry.packageName to kept
+            val customBitmap = customArtMap[entry.packageName]?.let { uri ->
+                app.decodeScaledBitmap(uri, BANNER_WIDTH_PX, BANNER_HEIGHT_PX)?.asImageBitmap()
+            }
+            if (customBitmap != null) {
+                return@associate entry.packageName to AppArt(banner = customBitmap, icon = null, color = null)
+            }
             val info = infoByKey[entry.packageName to entry.className]
             val banner = info?.let { runCatching { it.activityInfo.loadBanner(pm) ?: it.activityInfo.applicationInfo.loadBanner(pm) }.getOrNull() }
             val icon = info?.let { runCatching { it.loadIcon(pm) }.getOrNull() }

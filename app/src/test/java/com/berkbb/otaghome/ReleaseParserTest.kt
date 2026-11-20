@@ -81,4 +81,21 @@ class ReleaseParserTest {
         assertEquals(UpdateStatus.Available("0.3.0", "0.1.0", null), ReleaseParser.status(release("v0.3.0"), "0.1.0"))
         assertEquals(UpdateStatus.Unavailable, ReleaseParser.status(release("latest"), "0.1.0"))
     }
+
+    @Test
+    fun updateScheduleChecksDueIntervalsAndSuppressesDuplicateNotices() {
+        assertEquals(UpdateCheckInterval.DAILY, UpdateCheckInterval.OFF.next())
+        assertEquals(UpdateCheckInterval.WEEKLY, UpdateCheckInterval.DAILY.next())
+        assertEquals(UpdateCheckInterval.OFF, UpdateCheckInterval.WEEKLY.next())
+        assertEquals(UpdateCheckInterval.OFF, UpdateCheckInterval.fromName("NOPE"))
+
+        assertEquals(false, UpdateSchedule.shouldCheck(UpdateCheckInterval.OFF, 0L, 1_000_000_000L))
+        assertTrue(UpdateSchedule.shouldCheck(UpdateCheckInterval.WEEKLY, 0L, 1_000_000_000L))
+        assertEquals(false, UpdateSchedule.shouldCheck(UpdateCheckInterval.DAILY, 100_000L, 100_000L + 3_600_000L))
+        assertTrue(UpdateSchedule.shouldCheck(UpdateCheckInterval.DAILY, 100_000L, 100_000L + 86_400_000L))
+
+        assertTrue(UpdateSchedule.shouldNotify("1.1.0", null))
+        assertEquals(false, UpdateSchedule.shouldNotify("1.1.0", "1.1.0"))
+        assertTrue(UpdateSchedule.shouldNotify("1.2.0", "1.1.0"))
+    }
 }
