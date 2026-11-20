@@ -6,7 +6,7 @@ Material 3 shapes.
 
 *Otağ* is the command tent of the old Turkic khans; the logo is one.
 
-- Package: `com.berkbb.otaghome` · Android 8.0+ (API 26) · one APK for every TV (~1.5 MB)
+- Package: `com.berkbb.otaghome` · Android 8.0+ (API 26) · one APK for every TV (~1.7 MB)
 - Languages: English, Turkish, Romanian (the TV's language picks one; others fall back to English)
 - License: GNU General Public License v3.0
 
@@ -15,29 +15,36 @@ Material 3 shapes.
 **Home**
 - **Favorites** tab: a centred grid, inset on all sides, growing downwards.
 - **All apps** tab: every app meant for the viewer in a five-column grid.
-- Material 3 app cards: the app's TV banner (or its logo on its own colour) and the name.
-- Long press OK (or Menu) on an app: Move, App info, Add to / Remove from Favorites, Hide, Uninstall.
+- **Custom categories** (up to 6 optional tabs): organise apps into your own tabs and reorder them freely.
+- Material 3 app cards: the app's TV banner (or its logo on its own colour), or a custom 16:9 cover, with adjustable card opacity (`Solid`, `Translucent`, `Light glass`).
+- Long press OK (or Menu) on an app: Move, Rename, Custom cover, Categories, Lock with PIN, App info, Add to / Remove from Favorites, Hide, Uninstall.
+- Remote shortcuts: `CH+`/`CH-` cycle tabs, `PageUp`/`PageDown` jump rows, `1`–`9` open Favorites directly, hardware media keys (`Play/Pause`/`Next`/`Previous`) control background audio, and `Menu` outside a card opens Settings.
 - Move mode: the card lifts, the arrows move it, OK or Back drops it; the order is kept.
-- Top bar: clock with weekday and date (and the weather), the tabs in the centre, and buttons
-  for search (keyboard), voice search, inputs (HDMI, tuner), network and settings.
+- Top bar: clickable clock with weekday, date and weather (opening an icon-only 5-day forecast dialog), the tabs in the centre, and configurable buttons for search (keyboard), voice search, inputs (HDMI, tuner), network and settings.
 - Up from the first row goes to the control right above the card.
+- Media controls: a docked bar at the bottom while another app plays audio in the background
+  (song info with bounded marquee, artwork, open app, switch player, mute and playback buttons
+  with Notification access; basic Play/Pause/Mute/Stop controls without it).
 - Messages slide up from the bottom with an icon, a close button and a countdown.
 - A full-screen progress ring covers the screen while it is rebuilt or redrawn.
 
 **Settings** (the gear)
 - Theme: Auto (TV), Dark, Light, or Match background.
 - Theme colours: accent, cards, text, secondary text, screen ground, focus fill, text on focus;
-  each by hex code, spectrum (hue, saturation, brightness) or RGB.
-- Background: 39 ready-made vector pictures (9 OtagHome pictures and 30 landscapes of Türkiye),
-  your own picture, a solid colour or a gradient; an overlay (Normal, Light, Off) for pictures.
-- Weather in the clock card, from [Open-Meteo](https://open-meteo.com); the city is chosen by
-  search or, only after you allow it, found from the internet address.
-- Display: clock format, card size, app names on cards, start tab, Home button to OtagHome
-  (off by default; see *Make it the home screen*), message duration.
-- Apps: system apps (TV apps only, hidden, or all), order of Favorites and of All apps (your own
-  or by name), and the apps you hid.
-- Back up all settings to a file and restore them, for example on another TV.
-- Language, network and all TV settings as shortcuts; About with the update check.
+  each by hex code, 2D saturation–brightness spectrum box, HSV sliders or RGB sliders.
+- Background: 39 ready-made vector pictures (9 OtagHome pictures and 30 landscapes of Türkiye) or
+  your own pictures (from system SAF picker or built-in device picture browser) with optional daily
+  or on-launch auto-rotation, a solid colour or a gradient; an overlay (Normal, Light, Off) for pictures.
+- Weather in the clock card, from [Open-Meteo](https://open-meteo.com) (with 5-day forecast);
+  the city is chosen by search or, only after you allow it, found from the internet address.
+- Display: clock format, card size, card opacity, app names on cards, start tab, top-bar buttons,
+  1–9 Favorites shortcuts, Home button to OtagHome (off by default; see *Make it the home screen*),
+  media controls, optional 4-digit PIN lock (for Settings and locked apps), auto-check updates, message duration.
+- Apps: system apps (TV apps only, hidden, or all), order of Favorites and of All apps (your own,
+  by name, recently opened), custom categories, custom names/covers, and the apps you hid.
+- Back up all settings to a file (with app-storage fallback on TVs without a document picker) and
+  restore them on another TV, or reset all settings with confirmation.
+- Language, network and all TV settings as shortcuts; About with TV storage info and the update check.
 
 Everything shown on the background (focus frames, status lines) picks its colours by contrast
 against the background, so it stays readable on any colour, gradient or picture.
@@ -51,21 +58,26 @@ against the background, so it stays readable on any colour, gradient or picture.
 
 ## Privacy
 
-No accounts, no analytics, no tracking. Network use is limited to the weather and the update
-check (GitHub, only when you press Check for updates):
+No accounts, no analytics, no tracking. Network use is limited to the weather (including 5-day forecast) and the update
+check (GitHub, manual or when scheduled in Display settings):
 - Open-Meteo receives the coordinates of the chosen city (or of the found one).
 - Only if you allow it, ipwho.is (or ipapi.co when it does not answer) receives the TV's internet
   address to find the city. You are asked first, and can change this in Settings → Weather.
 
 The optional Home override is an accessibility service, off until you turn it on. It only
 notices when the TV's own home screen opens; it reads nothing on the screen and sends nothing.
+Full Now Playing info uses an optional notification listener (`MediaListenerService`) only to read
+active media sessions; it reads no notifications and sends nothing. Optional photo permission
+(`READ_MEDIA_IMAGES` / `READ_EXTERNAL_STORAGE` on older Android) is requested only when browsing
+device pictures in Settings and stays strictly local. The optional PIN lock stores only a salted
+SHA-256 hash locally and is excluded from backups.
 
 ## Install
 
 Download `otaghome-v<version>-universal-release.apk` and install it with a file manager, or:
 
 ```sh
-adb install -r otaghome-v1.0.3-universal-release.apk
+adb install -r otaghome-v1.1.0-universal-release.apk
 ```
 
 ### Make it the home screen

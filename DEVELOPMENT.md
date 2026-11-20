@@ -35,7 +35,7 @@ different key means installed TVs cannot update without uninstalling first.
 
 ```sh
 adb connect <tv-ip>:5555
-adb install -r app/build/outputs/apk/release/otaghome-v1.0.3-universal-release.apk
+adb install -r app/build/outputs/apk/release/otaghome-v1.1.0-universal-release.apk
 adb shell am start -n com.berkbb.otaghome/.MainActivity
 adb exec-out screencap -p > screen.png
 ```
@@ -55,15 +55,18 @@ merged and focus ends up somewhere unexpected.
 | `Components.kt` | Top bar, clock, tabs, buttons, app cards, remote keys, placement animation |
 | `SettingsPanel.kt` | Settings side sheet and its pages (main, background, ready-made pictures, colours, weather) |
 | `ColorPicker.kt` | Colour picker dialog (hex, spectrum, RGB) and colour rows |
-| `AppMenu.kt`, `About.kt`, `Footer.kt`, `WeatherUi.kt` | Long-press menu, About and licence, footer messages, weather consent and settings |
+| `AppMenu.kt`, `About.kt`, `Footer.kt`, `WeatherUi.kt` | Long-press menu, `RenameAppDialog`, About and licence, footer messages, weather consent and settings |
 | `AppCatalog.kt` | Pure rules: user-facing apps, merging, ordering, moving, sort and system-app modes |
 | `BackgroundSpec.kt` | Backgrounds, ready-made pictures, gradient direction, picture overlay |
 | `ThemeMode.kt` | Theme modes, palettes, colour roles, Material 3 corner scale |
 | `BackdropColors.kt`, `ArtColor.kt`, `ColorMath.kt` | Contrast, colours read from pictures, HSV ↔ RGB |
 | `Weather.kt`, `UpTargets.kt`, `RoomyBringIntoView.kt`, `NetworkStatus.kt` | Weather model and client, Up navigation, scroll margins, network icon |
-| `Display.kt` | Tabs, clock format, card size, start tab, settings backup format |
-| `SelfUpdate.kt` | Update check against GitHub releases, download with digest check, install, restart |
+| `Display.kt` | Tabs (`HomeTab`), card opacity, clock format, card size, start tab, remote navigation, settings backup format |
+| `DeviceImages.kt` | Pure device-image catalog, folder/MediaStore scanning, scaled bitmap decoding and cover import |
+| `PinLock.kt` | Optional salted SHA-256 PIN lock (`LockSettings`, `PinLock`, `PinDialog`) and `ConfirmDialog` |
+| `SelfUpdate.kt` | Update check & schedule against GitHub releases, download with digest check, install, restart |
 | `HomeOverride.kt` | Optional Home override: the TV's own home screens and the accessibility service that opens OtagHome over them |
+| `NowPlaying.kt`, `NowPlayingUi.kt` | Background media session / playback monitor (`MediaListenerService`, fallback media keys), docked `NowPlayingBar`, and Display page setup dialog |
 | `Busy.kt` | Full-screen progress ring while the screen is rebuilt or redrawn |
 
 Pure logic stays out of Compose so it can be unit-tested; every such file has a test in

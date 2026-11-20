@@ -6,6 +6,59 @@ All notable changes to OtagHome are listed here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-20
+
+### Added
+- **Media controls on the home screen:** a Pitwall-styled docked Now Playing bar appears at the
+  bottom whenever another app plays audio in the background (such as Radyo İLEF or music players),
+  monitored only while OtagHome is in the foreground. With Notification access granted (`Settings →
+  Display → Media controls`), it displays the track title (with a bounded 2-pass marquee for long
+  titles), artist and app name, scaled artwork (or the app icon), buffering progress, a clickable
+  header to open the playing app, a player switcher when multiple sessions exist, a Mute toggle, and
+  supported playback buttons (Previous, Play/Pause, Next, Stop/Close). Without Notification access,
+  basic Play/Pause, Mute and Stop/Close controls still work via `AudioPlaybackCallback` and media
+  key events, with a setup dialog offering TV settings, direct enabling on Android 8.0–8.1
+  (`WRITE_SECURE_SETTINGS`), or the `adb` grant command on TVs without a Notification access screen.
+- **Recently opened sort (`SortMode.RECENT`):** orders apps by when you last opened them from
+  OtagHome (purely local timestamps, no system permissions).
+- **Auto-changing preset backgrounds:** `Settings → Background → Auto-change picture` cycles
+  ready-made pictures (`Off`, `Daily`, or `Every time OtagHome opens`).
+- **App menu & remote shortcuts:** Rename any app locally (or restore its original name), Uninstall
+  directly from Favorites too, switch tabs with `CH+`/`CH-`, and page through app grids with
+  `PageUp`/`PageDown`.
+- **Backup fallback on pickerless TVs:** TVs without a document picker save and restore backups
+  directly in OtagHome's app storage (`otaghome-backup.json`) instead of opening a system stub.
+- **2D spectrum box in the colour picker:** added an interactive Saturation × Brightness spectrum
+  box to `ColorPickerDialog` alongside the Hue/Saturation/Brightness sliders, RGB sliders and
+  Hex code field (touch/drag and TV remote D-pad via OK + arrow keys).
+- **In-app device picture browser fallback:** on TVs without a real SAF document picker,
+  `Settings → Background → Choose image…` (and a dedicated **Device pictures** row when a system
+  picker is also present) opens a built-in browser that lists pictures from OtagHome's own pictures
+  folder (zero permissions) and, with optional photo permission, TV storage (`MediaStore` +
+  `Pictures`/`Downloads`), plus any installed `GET_CONTENT` picker. Auto-change picture also rotates
+  user images stored in OtagHome's pictures folder.
+- **Remote & media shortcuts:** press number keys `1`–`9` to launch Favorites directly
+  (`Settings → Display`), press hardware media Play/Pause/Next/Previous keys anywhere on the home
+  screen, press `Menu` outside an app card to open Settings, or click the top-left clock/weather
+  card to open an icon-only 5-day forecast dialog (`WeatherForecastDialog`).
+- **Custom categories, card opacity & custom app covers:** create up to 6 custom category tabs in
+  `Settings → Apps`, assign/reorder apps per category, set custom 16:9 card covers from the app
+  menu (`AppCoverPickerDialog`), adjust unfocused `Card opacity` (`Solid`, `Translucent`, `Light
+  glass`), and show/hide top-bar buttons in `Settings → Display → Top bar buttons`.
+- **PIN lock, auto-update checks, storage info & reset:** protect Settings and individual apps with
+  a 4-digit remote/keypad PIN (`Settings → Display → PIN lock`), enable optional daily/weekly
+  GitHub update notifications, inspect free/total TV storage in `About`, and reset all settings
+  with confirmation in `Settings → Backup & restore`.
+
+### Changed
+- **Live event-driven monitors:** replaced polling loops with `LauncherApps.Callback` for instant
+  app install/uninstall updates, `ConnectivityManager.NetworkCallback` (reading `NetworkCapabilities.signalStrength`
+  on API 29+) for network state, lifecycle-aware `ACTION_TIME_TICK` / time-zone receivers for the
+  clock, and lifecycle-scoped weather refreshes.
+- **Theme-aware errors, locale & update cache cleanup:** moved error text colour into `Palette.error`
+  for light-theme readability, fixed uppercase/capitalization locale calls in `AboutWindow`, and
+  automatically clean up cached `otaghome-*.apk` update files after updates or on startup.
+
 ### Fixed
 - **Update download during a GitHub regional outage:** on 2026-11-08 one GitHub region answered 504 for every
   `github.com/…/releases/download/…` address for hours while `api.github.com` kept working, so the in-app update
